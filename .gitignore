@@ -1,0 +1,16 @@
+# Segredos: nunca enviar ao GitHub
+.env
+*.key
+credenciais*.json
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+.ipynb_checkpoints/
+
+# Dados brutos grandes e modelos treinados
+dados/brutos/
+modelos/*.pkl
+modelos/*.bin

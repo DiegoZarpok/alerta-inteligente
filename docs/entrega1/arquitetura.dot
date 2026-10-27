@@ -1,0 +1,65 @@
+digraph G {
+  graph [rankdir=TB, fontname="DejaVu Sans", fontsize=11, nodesep=0.35, ranksep=0.55, pad=0.25, bgcolor="white", splines=spline, newrank=true];
+  node  [shape=box, style="rounded,filled", fontname="DejaVu Sans", fontsize=10, color="#3b4a5a", fillcolor="#ffffff", margin="0.12,0.06"];
+  edge  [fontname="DejaVu Sans", fontsize=8.5, color="#5b6b7b", arrowsize=0.7];
+
+  subgraph cluster_fontes { label="1. Fontes de dados (públicas)"; style="rounded,filled"; fillcolor="#eef4fb"; color="#9db7d5";
+    ana   [label="ANA - Hidroweb / Telemetria\nvazão e cota do Rio Cachoeira\n(estação Ferradas 53170000)"];
+    inmet [label="INMET\nchuva horária/diária"];
+    cem   [label="CEMADEN\npluviômetros da bacia"];
+    docs  [label="24 documentos do RAG\n(resumos próprios + protocolos fictícios)"];
+  }
+
+  subgraph cluster_n8n { label="2. Fluxo no n8n (orquestração)"; style="rounded,filled"; fillcolor="#fff6e8"; color="#e0b56a";
+    gat  [label="GATILHO\nAgendamento a cada 1 h\n(15 min se risco ≥ médio)", fillcolor="#ffe9c4"];
+    col  [label="Coleta\nHTTP: ANA/INMET/CEMADEN"];
+    se   [label="SE risco ≥ médio", shape=diamond, style="filled", fillcolor="#ffe9c4", fontsize=9];
+    acao [label="AÇÃO\nenvia alerta no Telegram", fillcolor="#ffe9c4"];
+    reg  [label="REGISTRO\ngrava alerta + log no MongoDB", fillcolor="#ffe9c4"];
+  }
+
+  subgraph cluster_ml { label="3. Modelo matemático de previsão (decide o risco)"; style="rounded,filled"; fillcolor="#eaf7ee"; color="#8cc49c";
+    feat [label="Variáveis calculadas\nchuva 24/48/72 h, vazão atual,\nvariação da vazão (ΔQ), média móvel"];
+    mod  [label="Regressão Logística + Random Forest\n(scikit-learn)\nP(vazão > 2.430 m³/s em 24 h)"];
+    nivel[label="Nível de risco\nbaixo < 0,30 ≤ médio < 0,60 ≤ alto"];
+  }
+
+  subgraph cluster_rag { label="4. IA generativa: LLM + RAG (só redige, não decide)"; style="rounded,filled"; fillcolor="#f3eefb"; color="#b39ddb";
+    chunk [label="Chunking\n~400 tokens, sobreposição 50,\npor seção do documento"];
+    emb   [label="Embeddings (local)\nparaphrase-multilingual-\nMiniLM-L12-v2 (384 dim.)"];
+    vet   [label="Banco vetorial\nMongoDB Atlas Vector Search\n(coleção documentos)"];
+    busca [label="Busca\ntop-4 por similaridade de cosseno\n+ filtro pelo nível de risco"];
+    llm   [label="LLM: Gemini 2.5 Flash\nredige o alerta em linguagem simples\ncom os números do modelo"];
+    val   [label="Validador\nconfere se nível e números\nno texto = saída do modelo", fillcolor="#fde7e7"];
+  }
+
+  subgraph cluster_db { label="5. MongoDB (SIS913) - acesso por papéis"; style="rounded,filled"; fillcolor="#f2f2f2"; color="#a0a0a0";
+    db [label="series_hidrologicas | estacoes | previsoes | alertas\ndocumentos (+ vetores) | moradores | relatos\nauditoria | views mascaradas", shape=cylinder, fillcolor="#ffffff"];
+  }
+
+  subgraph cluster_ft { label="6. Experimento de fine-tuning"; style="rounded,dashed,filled"; fillcolor="#fdf0f5"; color="#d48aa8";
+    ft [label="Tarefa: classificar relatos de moradores\n(confirmado / observação / não relacionado)\nBase: BERTimbau-base | 300 relatos fictícios\nMétrica: F1-macro vs. Gemini zero-shot"];
+  }
+
+  subgraph cluster_ui { label="7. Interface (sem site)"; style="rounded,filled"; fillcolor="#e8f6fb"; color="#7cc3dc";
+    tg  [label="Bot do Telegram\nrecebe alertas | /risco | envia relato"];
+    cli [label="Terminal do operador\npython cli.py status / treinar / avaliar"];
+  }
+
+  ana -> col; inmet -> col; cem -> col; gat -> col;
+  col -> feat [label="dados novos"];
+  col -> db [label="salva leituras", style=dashed];
+  db -> feat [label="histórico desde 1965", style=dashed];
+  feat -> mod -> nivel;
+  nivel -> se;
+  se -> busca [label="sim"];
+  se -> reg [label="não: só registra"];
+  docs -> chunk -> emb -> vet;
+  vet -> busca -> llm -> val;
+  val -> acao [label="aprovado"];
+  acao -> tg;
+  acao -> reg -> db;
+  tg -> ft [label="relato (anonimizado)", style=dashed];
+  ft -> db [style=dashed];
+  cli -> db [style=dashed, label="leitura"];
+}

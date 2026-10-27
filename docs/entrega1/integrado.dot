@@ -1,0 +1,61 @@
+digraph G {
+  graph [rankdir=TB, fontname="DejaVu Sans", fontsize=11, nodesep=0.28, ranksep=0.7, pad=0.2, newrank=true, splines=spline];
+  node  [shape=box, style="rounded,filled", fontname="DejaVu Sans", fontsize=9.5, color="#3b4a5a", fillcolor="#ffffff", margin="0.1,0.05"];
+  edge  [fontname="DejaVu Sans", fontsize=8, color="#5b6b7b", arrowsize=0.6];
+
+  subgraph cluster_ext { label="Fontes públicas"; style="rounded,filled"; fillcolor="#eef4fb"; color="#9db7d5";
+    fontes [label="ANA | INMET | CEMADEN"]; }
+
+  subgraph cluster_app { label="Serviços (cada um com usuário e papel próprios)"; style="rounded,filled"; fillcolor="#fff6e8"; color="#e0b56a";
+    n8n   [label="n8n: coleta e orquestra\nusuário svc_coleta"];
+    mod   [label="Modelo matemático\nusuário svc_modelo"];
+    rag   [label="RAG + LLM\nusuário svc_ia"];
+    val   [label="Validador de números", fillcolor="#fde7e7"];
+    cls   [label="Classificador BERTimbau\nusuário svc_classificador"];
+    bot   [label="Bot do Telegram\nusuário svc_bot\nsanitiza entradas"];
+  }
+
+  gem [label="Gemini 2.5 Flash (externo)\nrecebe só números públicos\ne trechos dos documentos;\nsem ferramentas, sem banco", fillcolor="#f3eefb"];
+
+  subgraph cluster_db { label="MongoDB  |  login obrigatório, lista de IPs, TLS, criptografia em disco"; style="rounded,filled"; fillcolor="#f4f4f4"; color="#888888";
+    series [label="series_hidrologicas\nestacoes\n(PÚBLICO)", fillcolor="#e3f4e6"];
+    prev   [label="previsoes\n(PÚBLICO + interno)", fillcolor="#e3f4e6"];
+    docs   [label="documentos + vetores\n(PÚBLICO / interno)", fillcolor="#e3f4e6"];
+    alert  [label="alertas\n(PÚBLICO + interno)", fillcolor="#fff3c9"];
+    mor    [label="moradores\nchat_hash SHA-256 + sal\nchat_cifrado AES-256-GCM\n(SENSÍVEL)", fillcolor="#fbd9d9"];
+    rel    [label="relatos\ntexto_cifrado AES-256-GCM\ntexto_anonimizado\n(SENSÍVEL)", fillcolor="#fbd9d9"];
+    vw     [label="views mascaradas\nvw_moradores_mascarado\nvw_relatos_anonimizados\nvw_auditoria_mascarada", fillcolor="#ffffff"];
+    aud    [label="auditoria\ntodos os serviços gravam aqui\n(só insert: ninguém altera nem apaga)", fillcolor="#e8e2f5"];
+  }
+
+  subgraph cluster_hum { label="Pessoas"; style="rounded,filled"; fillcolor="#e8f6fb"; color="#7cc3dc";
+    mor_p [label="Morador\n(Telegram)"];
+    op    [label="Operador Defesa Civil\npapel_operador"];
+    aut   [label="Auditor\npapel_auditor"];
+  }
+
+  fontes -> n8n;
+  n8n -> series [label="insert"];
+  series -> mod [label="find"];
+  mod -> prev [label="insert"];
+  prev -> rag [label="find"];
+  docs -> rag [label="find"];
+  rag -> gem [label="prompt sem\ndados pessoais"];
+  gem -> val [label="texto"];
+  val -> alert [label="insert (svc_ia)"];
+  alert -> bot [label="find"];
+  bot -> mor_p [xlabel="alerta"];
+  mor_p -> bot [xlabel="comandos fixos"];
+  bot -> mor [label="find/insert/\nupdate/remove"];
+  bot -> rel [label="insert"];
+  rel -> vw [style=dashed];
+  mor -> vw [style=dashed];
+  vw -> cls [label="find"];
+  cls -> rel [label="update classe"];
+  vw -> op;
+  vw -> aut;
+
+  rag -> mor [label="NEGADO", color="#c62828", fontcolor="#c62828", style=dashed, constraint=false];
+  rag -> rel [label="NEGADO", color="#c62828", fontcolor="#c62828", style=dashed, constraint=false];
+
+}
