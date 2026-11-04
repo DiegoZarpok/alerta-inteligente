@@ -1,9 +1,9 @@
-// Alerta Inteligente - criação do banco
-// Rodar no mongosh, de dentro da pasta do projeto:  load("banco/01_criar_banco.js")
+// Alerta Inteligente - criação do banco (coleções, validação, índices e views mascaradas)
+// Rodar pelo projeto:  python cli.py banco criar
+// (ou no mongosh, como administrador, de dentro da pasta do projeto:  load("banco/01_criar_banco.js"))
 
 (function () {
-
-  const banco = db.getSiblingDB("alerta_inteligente");
+  const banco = db.getSiblingDB(process.env.MONGODB_BANCO || "alerta_inteligente");
 
   function recriar(nome, validador) {
     if (banco.getCollectionNames().includes(nome)) banco.getCollection(nome).drop();
@@ -11,7 +11,7 @@
     print("colecao criada: " + nome);
   }
 
-  // séries de rio e chuva (dados públicos)
+  // séries de rio e chuva (dados públicos da ANA)
   recriar("series_hidrologicas", {
     bsonType: "object",
     required: ["estacao_id", "data_hora", "fonte"],
@@ -21,7 +21,9 @@
       cota_cm: { bsonType: ["double", "int", "null"] },
       vazao_m3s: { bsonType: ["double", "int", "null"], minimum: 0 },
       chuva_mm: { bsonType: ["double", "int", "null"], minimum: 0 },
-      fonte: { enum: ["ANA", "INMET", "CEMADEN", "SIMULADO"] }
+      fonte: { enum: ["ANA", "ANA-telemetria", "INMET", "CEMADEN", "SIMULADO", "TESTE"] },
+      nivel_consistencia: { bsonType: ["int", "null"] },
+      parcial: { bsonType: "bool" }
     }
   });
 
@@ -42,6 +44,7 @@
     required: ["data_hora", "probabilidade", "nivel_risco", "versao_modelo"],
     properties: {
       data_hora: { bsonType: "date" },
+      data_referencia: { bsonType: "date" },
       probabilidade: { bsonType: ["double", "int"], minimum: 0, maximum: 1 },
       nivel_risco: { enum: ["baixo", "medio", "alto"] },
       versao_modelo: { bsonType: "string" },
@@ -64,14 +67,17 @@
     }
   });
 
+  // trechos dos documentos do RAG, com o vetor (embedding) de cada um
   recriar("documentos", {
     bsonType: "object",
-    required: ["arquivo", "titulo", "conteudo", "tipo"],
+    required: ["arquivo", "titulo", "conteudo", "tipo", "trecho"],
     properties: {
       arquivo: { bsonType: "string" },
       titulo: { bsonType: "string" },
       conteudo: { bsonType: "string" },
       tipo: { enum: ["Real (público)", "Próprio", "Fictício"] },
+      trecho: { bsonType: "int" },
+      niveis: { bsonType: "array", items: { bsonType: "string" } },
       embedding: { bsonType: ["array", "null"] }
     }
   });
@@ -116,15 +122,16 @@
     }
   });
 
-  // índices básicos (os das consultas lentas ficam para o script 05, para medir antes e depois)
+  // índices básicos (os das consultas lentas ficam no script 05, para medir antes e depois)
   banco.moradores.createIndex({ chat_hash: 1 }, { unique: true });
   banco.moradores.createIndex({ setor: 1, ativo: 1 });
   banco.relatos.createIndex({ recebido_em: -1 });
   banco.previsoes.createIndex({ data_hora: -1 });
+  banco.alertas.createIndex({ enviado_em: -1 });
   banco.auditoria.createIndex({ data_hora: -1 });
-  banco.documentos.createIndex({ arquivo: 1 }, { unique: true });
+  banco.documentos.createIndex({ arquivo: 1, trecho: 1 }, { unique: true });
 
-  // views com campos mascarados (é por elas que operador e auditor leem)
+  // views com campos mascarados (é por elas que operador, auditor e classificador leem)
   ["vw_moradores_mascarado", "vw_relatos_anonimizados", "vw_auditoria_mascarada"].forEach(v => {
     if (banco.getCollectionNames().includes(v)) banco.getCollection(v).drop();
   });
@@ -136,8 +143,8 @@
     { $project: { _id: 1, recebido_em: 1, setor: 1, texto_anonimizado: 1, classe: 1 } }
   ]);
   banco.createView("vw_auditoria_mascarada", "auditoria", [
-    { $project: { _id: 0, data_hora: 1, usuario: 1, acao: 1, colecao: 1, detalhe: 1,
-        ip: { $concat: [{ $arrayElemAt: [{ $split: ["$ip", "."] }, 0] }, ".***.***.***"] } } }
+    { $project: { _id: 0, data_hora: 1, usuario: 1, acao: 1, colecao: 1, detalhe: 1, solicitante: 1, permitido: 1,
+        ip: { $concat: [{ $arrayElemAt: [{ $split: [{ $ifNull: ["$ip", "0.0.0.0"] }, "."] }, 0] }, ".***.***.***"] } } }
   ]);
   print("views criadas: vw_moradores_mascarado, vw_relatos_anonimizados, vw_auditoria_mascarada");
   print("OK: banco alerta_inteligente criado");

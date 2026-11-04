@@ -32,6 +32,13 @@
 - Scripts em banco/: 01 criação, 02 carga inicial (70.080 leituras simuladas, 24 documentos, 50 moradores e 30 relatos fictícios), 03 papéis e usuários, 04 volume (cerca de 2,6 milhões de leituras e 300 mil alertas), 05 medição antes e depois dos índices.
 - Ataques que serão testados: prompt injection, injeção NoSQL e escalonamento de privilégio.
 
+## Entrega 2: Versão 1.0 (em andamento, prazo 17/11/2026)
+- Código completo: coleta da ANA, modelo de previsão, RAG, Gemini com validador, API local, bot do Telegram, fluxo do n8n, consulta da IA respeitando permissões, auditoria, teste de permissões, casos de teste, custo e latência, ajuste fino no Colab.
+- Correções a partir do estudo da UESC (Farias e Gomes, 2023): o limiar de 2.430 m³/s é da estação Contorno da BR-101 (53180000), com tempo de retorno de 54 anos. O alvo do modelo passou a ser a cheia de 3 anos pela mesma curva de Gumbel (cerca de 930 m³/s), que segundo o estudo já atinge comunidades ribeirinhas.
+- Chuva: seis postos pluviométricos da ANA usados no estudo. Séries diárias; previsão da vazão média do dia seguinte.
+- Modelo de linguagem: gemini-3.5-flash-lite (o 2.5 Flash ficou restrito a quem já usava), com o mesmo preço orçado na Entrega 1.
+- Busca vetorial feita sobre os vetores guardados no MongoDB local; novo papel papel_n8n; coleta com leitura das séries; bot pode apagar relatos no /sair.
+- Testes automáticos: 30 testes (unidade e ponta a ponta) passando.
+
 ## Próximos passos
-- Apresentação parcial de 5 minutos.
-- Baixar as séries da ANA (Ferradas) e do INMET e carregar no MongoDB.
+- Rodar com os dados reais da ANA, o Gemini e o n8n e reunir as evidências da Entrega 2.

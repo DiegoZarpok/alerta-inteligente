@@ -1,10 +1,11 @@
 # A bacia do Rio Cachoeira
 
-> Origem: Resumo próprio de fonte pública (CPRM/SGB)  
-> Tipo: Real (público)
+> Origem: Resumo próprio de fontes públicas (CPRM/SGB; Farias e Gomes, 2023)  
+> Tipo: Real (público)  
+> Nível: todos
 
-O Rio Cachoeira atravessa Itabuna e Ilhéus, no sul da Bahia. A bacia hidrográfica tem cerca de 4.600 km² de área de drenagem e abrange 12 municípios. O rio recebe esse nome a partir do município de Itapé e segue até a foz, em Ilhéus.
+O Rio Cachoeira atravessa Itabuna e Ilhéus, no sul da Bahia. A bacia tem cerca de 4.600 km² de área de drenagem e abrange 12 municípios. O rio recebe esse nome a partir de Itapé e segue até a foz, em Ilhéus.
 
-A rede de monitoramento da bacia conta com estações fluviométricas da Agência Nacional de Águas (ANA). A estação de Ferradas (código 53170000), em Itabuna, tem área de drenagem de cerca de 3.850 km² e registros desde a década de 1960. Os dados são disponibilizados no sistema Hidroweb.
+A ANA mantém estações fluviométricas na bacia. As duas mais próximas de Itabuna são Ferradas (código 53170000), com registros desde 1965, e Contorno da BR-101 (código 53180000), com registros desde 1970. Contorno da BR-101 fica a jusante das demais e a montante do centro de Itabuna.
 
-Por que isso importa para o Alerta Inteligente: quase toda a água que chega ao centro de Itabuna passa antes por Ferradas. Por isso essa estação é a principal fonte de dados do modelo.
+Por que isso importa para o Alerta Inteligente: o modelo prevê a vazão na estação Contorno da BR-101, que é a referência do estudo da UESC para as cheias que chegam ao centro da cidade. A vazão de Ferradas entra como informação de quem está rio acima.

@@ -1,8 +1,8 @@
 # Protocolo de resposta: risco alto
 
 > Origem: FICTÍCIO - elaborado pelo grupo para o projeto  
-> Tipo: Fictício
-
+> Tipo: Fictício  
+> Nível: alto
 [DOCUMENTO FICTÍCIO PARA FINS ACADÊMICOS]
 
 Situação: probabilidade de cheia igual ou maior que 60%.

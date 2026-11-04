@@ -1,10 +1,10 @@
 // Alerta Inteligente - geração de volume para os testes de desempenho
 // Padrão: 10 estações x 30 anos de leituras horárias (cerca de 2,6 milhões) e 300 mil alertas.
 // Para testar rápido, defina VOLUME_ANOS=1 antes de abrir o mongosh.
-// Rodar no mongosh:  load("banco/04_gerar_volume.js")
+// Rodar pelo projeto:  python cli.py banco volume
 
 (function () {
-  const banco = db.getSiblingDB("alerta_inteligente");
+  const banco = db.getSiblingDB(process.env.MONGODB_BANCO || "alerta_inteligente");
   const ANOS = parseInt(process.env.VOLUME_ANOS || "30", 10);
   const ESTACOES = parseInt(process.env.VOLUME_ESTACOES || "10", 10);
   const ALERTAS = parseInt(process.env.VOLUME_ALERTAS || "300000", 10);
@@ -37,7 +37,7 @@
     while (setores.length < qtd) { const s = SETORES[Math.floor(Math.random() * 6)]; if (!setores.includes(s)) setores.push(s); }
     lote.push({ enviado_em: new Date(inicio + Math.floor(Math.random() * horas) * 3600000),
                 nivel_risco: alto ? "alto" : "medio", probabilidade: alto ? 0.75 : 0.45,
-                texto: "Alerta simulado [VOLUME]", setores, qtd_destinatarios: 10 * qtd,
+                texto: "Alerta simulado [VOLUME]", setores, qtd_destinatarios: NumberInt(10 * qtd),
                 modelo_llm: "gemini-2.5-flash", validado: true });
     if (lote.length === LOTE) { banco.alertas.insertMany(lote, { ordered: false }); totalAlertas += LOTE; lote = []; }
   }

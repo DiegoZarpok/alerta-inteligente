@@ -1,8 +1,8 @@
 # Política de privacidade e uso de dados
 
 > Origem: Texto próprio do grupo  
-> Tipo: Próprio
-
+> Tipo: Próprio  
+> Nível: todos
 - Os dados hidrológicos e meteorológicos usados são públicos.
 - Do morador, o sistema guarda apenas um hash do identificador do Telegram e o setor escolhido.
 - Relatos enviados ao bot passam por anonimização (remoção de nomes, telefones e endereços) antes de serem gravados.

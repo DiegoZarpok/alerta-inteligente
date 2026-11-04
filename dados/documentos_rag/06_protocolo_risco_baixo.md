@@ -1,8 +1,8 @@
 # Protocolo de resposta: risco baixo
 
 > Origem: FICTÍCIO - elaborado pelo grupo para o projeto  
-> Tipo: Fictício
-
+> Tipo: Fictício  
+> Nível: baixo
 [DOCUMENTO FICTÍCIO PARA FINS ACADÊMICOS]
 
 Situação: probabilidade de cheia abaixo de 30%.

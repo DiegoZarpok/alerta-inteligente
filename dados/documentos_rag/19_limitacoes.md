@@ -1,8 +1,8 @@
 # Limitações do sistema
 
 > Origem: Texto próprio do grupo  
-> Tipo: Próprio
-
+> Tipo: Próprio  
+> Nível: todos
 - É uma ferramenta experimental de estimativa de risco, não um sistema oficial de alerta.
 - Cheias grandes são raras na série histórica; o modelo tem poucos exemplos positivos para aprender.
 - Falhas nas estações (dados ausentes) reduzem a confiança da previsão.

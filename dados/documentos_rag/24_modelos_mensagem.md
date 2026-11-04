@@ -1,8 +1,8 @@
 # Modelos de mensagem de alerta
 
 > Origem: Texto próprio do grupo  
-> Tipo: Próprio
-
+> Tipo: Próprio  
+> Nível: medio, alto
 Modelo - risco médio:
 "ATENÇÃO - Rio Cachoeira. Probabilidade de cheia nas próximas 24 h: {P}%. Vazão atual: {Q} m³/s. Separe documentos e eleve objetos. Abrigo do seu setor: {abrigo}. Emergência: 199."
 

@@ -1,8 +1,8 @@
 # Setores de risco (simulados)
 
 > Origem: FICTÍCIO - setores inventados para não expor endereços reais  
-> Tipo: Fictício
-
+> Tipo: Fictício  
+> Nível: todos
 [DOCUMENTO FICTÍCIO PARA FINS ACADÊMICOS - não representa o mapeamento oficial]
 
 - Setor Ribeirinho 01: margem esquerda, trecho central; casas térreas próximas ao leito.

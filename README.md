@@ -1,58 +1,68 @@
 # Alerta Inteligente: Previsão de Cheias do Rio Cachoeira (Itabuna-BA)
 
-Grupo Sentinela do Cachoeira, SIS939 - Projeto de Inteligência Artificial, Unex Itabuna.
-Projeto integrado com SIS913 - Bancos de Dados NoSQL.
+Grupo Sentinela do Cachoeira. SIS939 - Projeto de Inteligência Artificial, integrado com SIS913 - Bancos de Dados NoSQL. Unex Itabuna.
 
 Componentes: Diego Ailton Silva Barbosa, Pedro Henrique Costa, Alexandre Pereira Muniz e Marcos Vinicius Farias Silva.
 
-## Problema
+## O que o sistema faz
 
-Itabuna sofre com cheias do Rio Cachoeira desde pelo menos 1914. Em dezembro de 2021 o rio subiu cerca de 9 metros. Hoje o morador só percebe a cheia quando a água já está chegando.
+Itabuna sofre com cheias do Rio Cachoeira desde pelo menos 1914. O sistema calcula, a partir de dados públicos da ANA, a probabilidade de a vazão na estação Contorno da BR-101 (53180000) passar no dia seguinte de 930 m³/s, a cheia de 3 anos de retorno pela curva de Gumbel do estudo de Farias e Gomes (2023, UESC). Quando o risco é médio ou alto, o Gemini escreve o alerta com base em 24 documentos de orientação (RAG), um validador confere os números e o alerta sai pelo Telegram. Tudo fica registrado no MongoDB, com papéis de acesso separados para cada parte do sistema.
 
-O sistema é pensado para os moradores das áreas ribeirinhas e para a Defesa Civil. Funcionando, o aviso chega com até 24 horas de antecedência, tempo suficiente para tirar documentos, móveis e pessoas das áreas de risco.
+Não há site nem chat livre: a interface é o bot do Telegram, com comandos fixos, e o terminal (`cli.py`).
 
-## Como funciona
+## Como rodar
 
-1. Coleta: um fluxo no n8n busca a cada hora a vazão e a cota do rio (ANA, estação Ferradas 53170000) e a chuva da bacia (INMET e CEMADEN).
-2. Modelo de previsão: Regressão Logística e Random Forest (scikit-learn) calculam a probabilidade de a vazão passar de 2.430 m³/s nas próximas 24 horas. Esse limiar de transbordamento vem de um estudo da UESC (2023). O resultado vira um nível de risco: baixo, médio ou alto.
-3. LLM com RAG: quando o risco é médio ou alto, o Gemini 2.5 Flash escreve o alerta em linguagem simples, usando 24 documentos de orientação guardados no MongoDB Atlas (busca vetorial). Um validador confere se os números do texto são os mesmos calculados pelo modelo.
-4. Envio e registro: o alerta sai pelo bot do Telegram e fica registrado no MongoDB.
-5. Fine-tuning: experimento com BERTimbau para classificar relatos de moradores, comparado ao Gemini sem treino.
-
-O projeto não tem site nem chat livre. A interface é o bot do Telegram, com comandos fixos, e o terminal do operador.
-
-## Tecnologias
-
-Python 3.11, Pandas, NumPy, scikit-learn, Matplotlib, MongoDB Atlas (Vector Search), sentence-transformers, Gemini API, n8n, Telegram Bot API e Hugging Face Transformers (Google Colab).
-
-## Estrutura do repositório
+Pré-requisitos: Python 3.12, MongoDB Community 8 com mongosh, Node.js 20 ou 22 (para o n8n). O passo a passo detalhado para Windows está em `docs/entrega2/` e no relatório da entrega.
 
 ```
-banco/                  scripts do MongoDB (criação, carga, papéis, volume e consultas lentas)
-dados/documentos_rag/   24 documentos da base do RAG e INDICE.md com a origem de cada um
-docs/entrega1/          PDF da Entrega 1, canvas, diagrama de arquitetura e diagrama integrado
-REGISTRO.md             histórico do projeto
-.env.example            modelo das variáveis de ambiente, sem chaves reais
+python -m venv .venv
+.venv\Scripts\Activate.ps1          (no Linux/Mac: source .venv/bin/activate)
+pip install -r requirements.txt
+python cli.py configurar             cria o .env com senhas e chaves aleatórias
+python cli.py criar-admin            cria o administrador do MongoDB (antes de ligar a autenticação)
+                                     ligar "security: authorization: enabled" no mongod.cfg e reiniciar o serviço
+python cli.py banco criar            coleções, validação, índices e views mascaradas
+python cli.py banco papeis           papéis e usuários (privilégio mínimo)
+python cli.py banco carga            estações e moradores/relatos fictícios
+python cli.py baixar-dados           séries reais da ANA
+python cli.py carregar-dados         grava as séries no MongoDB
+python cli.py treinar                treina e avalia o modelo (resultados/modelo/)
+python cli.py indexar-documentos     monta a base do RAG com os vetores
+python cli.py testar-permissoes      evidência de acesso permitido e negado
+python cli.py banco volume           gera volume para os testes de desempenho
+python cli.py banco consultas-lentas planos de execução antes e depois dos índices
+python cli.py servidor               API local (deixar aberto)
+python cli.py bot                    bot do Telegram (deixar aberto, em outro terminal)
+npx n8n                              importar n8n/fluxo_alerta.json
+python cli.py casos                  casos de teste da IA
+python cli.py avaliar-prompts        compara as versões do prompt
+python cli.py custo-latencia         mede custo e tempo de resposta
 ```
 
-## Banco de dados
+Terminal do operador: `python cli.py status`, `python cli.py consulta --usuario operador_defesa_civil "quais foram os últimos alertas?"` e `python cli.py auditoria`.
 
-No mongosh, aberto na pasta do projeto, rodar em ordem:
+O ajuste fino do BERTimbau roda no Google Colab: `notebooks/finetuning_bertimbau.ipynb`.
+
+## Estrutura
 
 ```
-load("banco/01_criar_banco.js")      // coleções, validação, índices e views mascaradas
-load("banco/02_carga_inicial.js")    // carga inicial (precisa de ALERTA_CHAVE e ALERTA_SAL)
-load("banco/03_papeis_usuarios.js")  // papéis e usuários com privilégio mínimo
-load("banco/04_gerar_volume.js")     // volume para os testes de desempenho
-load("banco/05_consultas_lentas.js") // consultas lentas antes e depois dos índices
+cli.py                  comandos do projeto e terminal do operador
+src/coleta/             download das séries da ANA e carga no MongoDB
+src/modelo/             limiares do estudo da UESC, variáveis, treino e previsão
+src/ia/                 RAG, Gemini, validador, alerta, consulta com permissões, classificador de relatos
+src/api/ src/bot/       API local (usada pelo n8n e pelo bot) e bot do Telegram
+src/permissoes.py       teste automático de GRANT e DENY
+banco/                  scripts do mongosh (criação, carga, papéis, volume, consultas lentas)
+prompts/                prompts versionados e HISTORICO.md
+n8n/fluxo_alerta.json   fluxo do n8n (gatilho, IA, ação, registro)
+notebooks/              ajuste fino do BERTimbau (Colab)
+dados/                  documentos do RAG, relatos fictícios, séries da ANA
+resultados/             métricas, figuras, casos de teste, permissões, planos de execução
+testes/                 testes automáticos (pytest)
 ```
 
 ## Segurança
 
-Chaves de API, senhas, a chave de criptografia e o sal do hash ficam no arquivo `.env`, que está no `.gitignore` e não vai para o GitHub. Os dados de rio e chuva são públicos. Os dados de moradores usados nesta fase são fictícios; no banco, o identificador do Telegram é guardado com hash e criptografia, e operador e auditor só leem views mascaradas.
-
-## Versão mínima (3 semanas)
-
-Histórico carregado no MongoDB, modelo treinado e avaliado, e fluxo do n8n rodando de hora em hora, calculando o risco, gerando o texto com RAG, enviando no Telegram e registrando o alerta.
+Senhas, chaves de API, a chave de criptografia e o sal ficam no `.env`, que está no `.gitignore`. O identificador do Telegram de cada morador é guardado com hash SHA-256 com sal e criptografado com AES-256-GCM; operador e auditor só leem views mascaradas. O Gemini recebe apenas números públicos e trechos dos documentos. Os moradores e relatos usados no projeto são fictícios.
 
 Ferramenta experimental de estimativa de risco. Não substitui a Defesa Civil (199).

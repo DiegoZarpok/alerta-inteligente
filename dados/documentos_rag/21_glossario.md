@@ -1,8 +1,8 @@
 # Glossário
 
 > Origem: Texto próprio do grupo  
-> Tipo: Próprio
-
+> Tipo: Próprio  
+> Nível: todos
 - Bacia hidrográfica: área cuja chuva escoa para um mesmo rio.
 - Cota: altura da água na régua.
 - Vazão: volume de água por segundo (m³/s).

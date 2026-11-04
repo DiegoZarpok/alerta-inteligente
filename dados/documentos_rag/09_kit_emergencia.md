@@ -1,8 +1,8 @@
 # Kit de emergência para famílias
 
 > Origem: Texto próprio baseado em orientações gerais públicas de Defesa Civil  
-> Tipo: Próprio
-
+> Tipo: Próprio  
+> Nível: todos
 Itens recomendados para um kit de emergência:
 
 - Documentos pessoais em saco plástico fechado

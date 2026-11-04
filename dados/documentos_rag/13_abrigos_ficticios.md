@@ -1,8 +1,8 @@
 # Pontos de abrigo (simulados)
 
 > Origem: FICTÍCIO - locais inventados  
-> Tipo: Fictício
-
+> Tipo: Fictício  
+> Nível: medio, alto
 [DOCUMENTO FICTÍCIO PARA FINS ACADÊMICOS]
 
 - Abrigo A (escola em área alta), atende os Setores 01 e 02.

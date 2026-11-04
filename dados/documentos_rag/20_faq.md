@@ -1,8 +1,8 @@
 # Perguntas frequentes
 
 > Origem: Texto próprio do grupo  
-> Tipo: Próprio
-
+> Tipo: Próprio  
+> Nível: todos
 Quem decide se há risco? Um modelo matemático treinado com décadas de dados de chuva e vazão. A IA generativa só escreve a mensagem.
 
 Com quanta antecedência vem o alerta? O objetivo é 24 horas antes de a vazão passar do limite.

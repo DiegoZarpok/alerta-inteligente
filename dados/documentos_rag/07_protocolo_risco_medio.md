@@ -1,8 +1,8 @@
 # Protocolo de resposta: risco médio
 
 > Origem: FICTÍCIO - elaborado pelo grupo para o projeto  
-> Tipo: Fictício
-
+> Tipo: Fictício  
+> Nível: medio
 [DOCUMENTO FICTÍCIO PARA FINS ACADÊMICOS]
 
 Situação: probabilidade de cheia entre 30% e 60%.

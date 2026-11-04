@@ -1,8 +1,8 @@
 # Telefones de emergência
 
 > Origem: Números nacionais públicos  
-> Tipo: Real (público)
-
+> Tipo: Real (público)  
+> Nível: todos
 - Defesa Civil: 199
 - Corpo de Bombeiros: 193
 - SAMU: 192

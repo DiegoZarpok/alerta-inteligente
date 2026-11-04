@@ -1,8 +1,8 @@
 # O que são cota, vazão e curva-chave
 
 > Origem: Texto didático próprio (conhecimento técnico geral de hidrologia)  
-> Tipo: Próprio
-
+> Tipo: Próprio  
+> Nível: todos
 Cota é a altura da água medida na régua da estação, em centímetros ou metros. Vazão é o volume de água que passa por uma seção do rio a cada segundo, em m³/s.
 
 As estações medem a cota com frequência, mas a vazão é difícil de medir diretamente. Por isso usa-se a curva-chave, uma equação ajustada a partir de medições em campo:

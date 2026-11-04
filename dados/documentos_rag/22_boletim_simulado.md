@@ -1,12 +1,13 @@
 # Boletim de evento simulado
 
 > Origem: FICTÍCIO - evento inventado para teste  
-> Tipo: Fictício
+> Tipo: Fictício  
+> Nível: alto
 
 [DOCUMENTO FICTÍCIO PARA FINS ACADÊMICOS]
 
-Evento simulado S-01. Chuva acumulada de 72 h na bacia: 180 mm. Vazão em Ferradas às 06h: 1.650 m³/s, subindo 420 m³/s em 24 h. Probabilidade estimada pelo modelo: 0,71 (risco alto).
+Evento simulado S-01. Chuva acumulada de 72 h na bacia: 180 mm. Vazão na estação Contorno da BR-101: 650 m³/s, subindo 380 m³/s em 24 h. Probabilidade estimada pelo modelo: 0,71 (risco alto).
 
 Ações simuladas: alerta enviado aos Setores 01 a 05; coleta a cada 15 minutos; registro na coleção alertas.
 
-Resultado simulado: pico de 2.610 m³/s 19 horas depois do alerta (acerto).
+Resultado simulado: no dia seguinte a vazão média chegou a 1.240 m³/s, acima do limiar de 930 m³/s (acerto).

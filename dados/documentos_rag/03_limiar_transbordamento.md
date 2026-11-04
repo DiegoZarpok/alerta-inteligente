@@ -1,10 +1,11 @@
-# Limiar de transbordamento do Rio Cachoeira
+# Limiares de cheia do Rio Cachoeira
 
-> Origem: Resumo próprio de artigo público (Farias & Gomes, Rev. Bras. Geografia Física, 2023)  
-> Tipo: Real (público)
+> Origem: Resumo próprio de artigo público (Farias e Gomes, Revista Brasileira de Geografia Física, 2023)  
+> Tipo: Real (público)  
+> Nível: todos
 
-Um estudo da UESC (2023) comparou as séries de vazão do Rio Cachoeira com os anos em que Itabuna teve inundações. Os picos de vazão máxima coincidiram com esses anos. O estudo indicou que, a partir de uma vazão de aproximadamente 2.430 m³/s, a água extravasa o leito do rio.
+Pesquisadores da UESC ajustaram a distribuição de Gumbel às vazões máximas anuais das estações próximas a Itabuna e calcularam a vazão esperada para cada tempo de retorno. Na estação Contorno da BR-101, os valores foram 670 m³/s para 2 anos, 1.220 m³/s para 5 anos, 1.583 m³/s para 10 anos, 1.932 m³/s para 20 anos e 2.430 m³/s para 54 anos.
 
-O Alerta Inteligente usa esse valor como limiar de cheia (Q_limite = 2.430 m³/s). O modelo estima a probabilidade de a vazão ultrapassar esse limiar nas próximas 24 horas.
+A cheia de 2.430 m³/s, com tempo de retorno de 54 anos, corresponde à de 1967 e é a vazão a partir da qual o rio extravasa e atinge o centro comercial de Itabuna. O estudo registra também que cheias com tempo de retorno acima de 3 anos já atingem comunidades ribeirinhas, como a do Bananeira.
 
-Como cheias desse porte são raras, o projeto também testa um limiar mais baixo de "atenção" (definido pelo grupo a partir do percentil 99 da série histórica). Assim existem mais exemplos positivos para treinar o modelo.
+Como a cheia de 54 anos aconteceu poucas vezes na série histórica, o Alerta Inteligente usa como limiar do modelo a cheia de 3 anos, calculada pela mesma curva do estudo: cerca de 930 m³/s na estação Contorno da BR-101. O modelo estima a probabilidade de a vazão média do dia seguinte passar desse valor.

@@ -1,0 +1,281 @@
+{
+  "name": "Alerta Inteligente - ciclo de previsão e alerta",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "minutes",
+              "minutesInterval": 15
+            }
+          ]
+        }
+      },
+      "name": "Gatilho a cada 15 min",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        300
+      ],
+      "id": "28664573-d2c5-470e-b718-0ff501011207"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://127.0.0.1:8000/ciclo",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "{}",
+        "options": {
+          "timeout": 180000
+        }
+      },
+      "name": "Coleta e previsão (API)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        240,
+        300
+      ],
+      "id": "4bdfb229-ef3c-40d8-bc32-84a830b9696a"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose"
+          },
+          "conditions": [
+            {
+              "id": "9e751e8a-d4af-42c3-bc61-f7b45d88a185",
+              "leftValue": "={{ $json.enviar_alerta }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "name": "Risco médio ou alto?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        480,
+        300
+      ],
+      "id": "fe594db5-a4eb-4e50-9f3b-cea858c54d86"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://127.0.0.1:8000/alerta",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"previsao_id\": \"{{ $json.previsao_id }}\",\n  \"solicitante\": \"n8n\"\n}",
+        "options": {
+          "timeout": 180000
+        }
+      },
+      "name": "Gerar alerta (RAG + Gemini)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        720,
+        200
+      ],
+      "id": "b312dd70-a97a-49c7-951c-0f5ba6bcdb73"
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $json.chat_id }}",
+        "text": "={{ $json.texto }}",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "name": "Enviar no Telegram",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        960,
+        200
+      ],
+      "id": "f3b7ee12-a1b8-4834-bbbc-a67037176ca7"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "de3fe9cc-7559-45a0-802b-57ba0f169b91",
+              "name": "data_hora",
+              "value": "={{ $now.toISO() }}",
+              "type": "string"
+            },
+            {
+              "id": "694534f1-ca94-410a-a56c-fe6d59491a9c",
+              "name": "usuario",
+              "value": "svc_n8n",
+              "type": "string"
+            },
+            {
+              "id": "f0f72ce9-c62d-4c67-9209-4bfccc020497",
+              "name": "acao",
+              "value": "envio_telegram",
+              "type": "string"
+            },
+            {
+              "id": "caa4149b-19f3-45e8-9d02-fe8c99635db3",
+              "name": "colecao",
+              "value": "alertas",
+              "type": "string"
+            },
+            {
+              "id": "2d0b9050-6ee3-4ff0-bc2f-2a6461980fa1",
+              "name": "detalhe",
+              "value": "=alerta {{ $('Gerar alerta (RAG + Gemini)').item.json.alerta_id }} enviado ao grupo {{ $('Gerar alerta (RAG + Gemini)').item.json.chat_id }}, nível {{ $('Gerar alerta (RAG + Gemini)').item.json.nivel_risco }}",
+              "type": "string"
+            },
+            {
+              "id": "67455198-f822-41e8-b0ce-359873edb5a4",
+              "name": "ip",
+              "value": "127.0.0.1",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "name": "Montar registro",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1200,
+        200
+      ],
+      "id": "e81ff906-b543-4b30-891e-6d5dee019744"
+    },
+    {
+      "parameters": {
+        "operation": "insert",
+        "collection": "auditoria",
+        "fields": "data_hora,usuario,acao,colecao,detalhe,ip",
+        "options": {
+          "dateFields": "data_hora"
+        }
+      },
+      "name": "Registrar no MongoDB",
+      "type": "n8n-nodes-base.mongoDb",
+      "typeVersion": 1.1,
+      "position": [
+        1440,
+        200
+      ],
+      "id": "099a5870-9ae8-466d-bcfc-88c1b87eeeca"
+    },
+    {
+      "parameters": {},
+      "name": "Risco baixo: sem alerta",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        720,
+        420
+      ],
+      "id": "9c339fad-7ea6-49a1-b2c4-6ea9c6f97ee9"
+    }
+  ],
+  "connections": {
+    "Gatilho a cada 15 min": {
+      "main": [
+        [
+          {
+            "node": "Coleta e previsão (API)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Coleta e previsão (API)": {
+      "main": [
+        [
+          {
+            "node": "Risco médio ou alto?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Risco médio ou alto?": {
+      "main": [
+        [
+          {
+            "node": "Gerar alerta (RAG + Gemini)",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Risco baixo: sem alerta",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gerar alerta (RAG + Gemini)": {
+      "main": [
+        [
+          {
+            "node": "Enviar no Telegram",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Enviar no Telegram": {
+      "main": [
+        [
+          {
+            "node": "Montar registro",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Montar registro": {
+      "main": [
+        [
+          {
+            "node": "Registrar no MongoDB",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "pinData": {},
+  "active": false
+}
