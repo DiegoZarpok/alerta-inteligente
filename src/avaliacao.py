@@ -83,6 +83,8 @@ def avaliar_prompts(versoes=("v1", "v2"), pausa=4.0):
 
 
 def medir_custo_latencia(repeticoes=20, modelos=None, pausa=4.0):
+    """Mede tempo e custo por alerta. Chamadas em que o Gemini falhou (e o sistema usou o texto padrão)
+    são contadas à parte e não entram na média de tokens e custo."""
     banco = conectar("ia")
     modelos = modelos or [config.GEMINI_MODELO]
     resultado = {}
@@ -92,33 +94,48 @@ def medir_custo_latencia(repeticoes=20, modelos=None, pausa=4.0):
         except LLMIndisponivel as erro:
             print(f"  {nome}: {erro}")
             continue
-        medidas = []
+        medidas, falhas = [], []
         for i in range(repeticoes):
             nivel, p, q = CENARIOS[i % len(CENARIOS)]
             inicio = time.perf_counter()
             r = alerta.escrever(_previsao(nivel, p, q), banco, "alerta", config.PROMPT_ALERTA_VERSAO, llm)
             total = time.perf_counter() - inicio
-            medidas.append({"total_s": total, "llm_s": r["latencia_llm_s"], "busca_s": r["latencia_busca_s"],
-                            "entrada": r["tokens_entrada"], "saida": r["tokens_saida"],
-                            "raciocinio": r["tokens_raciocinio"], "custo": r["custo_usd"] or 0.0,
-                            "aprovado": r["validado"]})
-            print(f"  {nome} {i + 1}/{repeticoes}: {total:.2f} s, {r['tokens_entrada']}+{r['tokens_saida']} tokens")
+            if r["modelo_llm"] is None:  # o Gemini não respondeu: o sistema usou o texto padrão
+                motivo = (r["problemas"] or ["sem detalhe"])[0]
+                falhas.append({"total_s": round(total, 2), "motivo": motivo[:300]})
+                print(f"  {nome} {i + 1}/{repeticoes}: {total:.2f} s, FALHOU (texto padrão usado): {motivo[:120]}")
+            else:
+                tentativas = r.get("tentativas_llm") or [200]
+                medidas.append({"total_s": total, "llm_s": r["latencia_llm_s"], "busca_s": r["latencia_busca_s"],
+                                "entrada": r["tokens_entrada"], "saida": r["tokens_saida"],
+                                "raciocinio": r["tokens_raciocinio"], "custo": r["custo_usd"] or 0.0,
+                                "aprovado": r["validado"], "tentativas": tentativas})
+                extra = "" if len(tentativas) == 1 else f" (tentativas: {tentativas})"
+                print(f"  {nome} {i + 1}/{repeticoes}: {total:.2f} s, {r['tokens_entrada']}+{r['tokens_saida']} tokens{extra}")
             time.sleep(pausa)
-        custo_medio = statistics.mean(m["custo"] for m in medidas)
-        resultado[nome] = {
-            "repeticoes": len(medidas),
-            "preco_por_milhao_usd": {"entrada": PRECOS.get(nome, (None, None))[0],
-                                     "saida": PRECOS.get(nome, (None, None))[1]},
-            "latencia_total_s": _estatisticas([m["total_s"] for m in medidas]),
-            "latencia_llm_s": _estatisticas([m["llm_s"] for m in medidas]),
-            "latencia_busca_rag_s": _estatisticas([m["busca_s"] for m in medidas]),
-            "tokens_entrada_media": round(statistics.mean(m["entrada"] for m in medidas)),
-            "tokens_saida_media": round(statistics.mean(m["saida"] for m in medidas)),
-            "tokens_raciocinio_media": round(statistics.mean(m["raciocinio"] for m in medidas)),
-            "custo_por_uso_usd": round(custo_medio, 6),
-            "custo_por_1000_usos_usd": round(custo_medio * 1000, 3),
-            "aprovados_validador": f"{sum(m['aprovado'] for m in medidas)}/{len(medidas)}",
-        }
+        resumo = {"repeticoes": repeticoes, "respostas_do_gemini": len(medidas), "falhas": len(falhas),
+                  "motivos_das_falhas": sorted({f["motivo"][:120] for f in falhas}),
+                  "preco_por_milhao_usd": {"entrada": PRECOS.get(nome, (None, None))[0],
+                                           "saida": PRECOS.get(nome, (None, None))[1]}}
+        if medidas:
+            custo_medio = statistics.mean(m["custo"] for m in medidas)
+            primeira = [m["total_s"] for m in medidas if len(m["tentativas"]) == 1]
+            resumo.update({
+                "latencia_total_s": _estatisticas([m["total_s"] for m in medidas]),
+                "latencia_total_sem_nova_tentativa_s": _estatisticas(primeira),
+                "chamadas_com_nova_tentativa": sum(len(m["tentativas"]) > 1 for m in medidas),
+                "latencia_llm_s": _estatisticas([m["llm_s"] for m in medidas]),
+                "latencia_busca_rag_s": _estatisticas([m["busca_s"] for m in medidas]),
+                "tokens_entrada_media": round(statistics.mean(m["entrada"] for m in medidas)),
+                "tokens_saida_media": round(statistics.mean(m["saida"] for m in medidas)),
+                "tokens_raciocinio_media": round(statistics.mean(m["raciocinio"] for m in medidas)),
+                "custo_por_uso_usd": round(custo_medio, 6),
+                "custo_por_1000_usos_usd": round(custo_medio * 1000, 3),
+                "aprovados_validador": f"{sum(m['aprovado'] for m in medidas)}/{len(medidas)}",
+            })
+        if falhas:
+            resumo["latencia_ate_desistir_s"] = _estatisticas([f["total_s"] for f in falhas])
+        resultado[nome] = resumo
 
     # tempo do modelo de previsão (sem o Gemini), para comparação
     from .modelo.treinar import carregar_modelo
@@ -141,14 +158,23 @@ def medir_custo_latencia(repeticoes=20, modelos=None, pausa=4.0):
         if nome == "modelo_previsao":
             md.append(f"Modelo de previsão ({r['nome']}): {r['latencia_s']['mediana'] * 1000:.1f} ms por previsão (mediana).")
             continue
-        md += [f"## {nome}", f"- Repetições: {r['repeticoes']}",
-               f"- Tempo total por alerta: mediana {r['latencia_total_s']['mediana']} s, p95 {r['latencia_total_s']['p95']} s",
-               f"- Só o Gemini: mediana {r['latencia_llm_s']['mediana']} s; busca no RAG: mediana {r['latencia_busca_rag_s']['mediana']} s",
-               f"- Tokens por uso: {r['tokens_entrada_media']} de entrada, {r['tokens_saida_media']} de saída, "
-               f"{r['tokens_raciocinio_media']} de raciocínio",
-               f"- Custo: US$ {r['custo_por_uso_usd']} por uso, US$ {r['custo_por_1000_usos_usd']} a cada 1.000 usos "
-               f"(preço do nível pago)",
-               f"- Textos aprovados pelo validador: {r['aprovados_validador']}", ""]
+        md += [f"## {nome}", f"- Chamadas: {r['repeticoes']} ({r['respostas_do_gemini']} respondidas pelo Gemini, "
+               f"{r['falhas']} com falha e texto padrão)"]
+        if r["respostas_do_gemini"]:
+            sem = r["latencia_total_sem_nova_tentativa_s"]
+            md += [f"- Tempo total por alerta: mediana {r['latencia_total_s']['mediana']} s, p95 {r['latencia_total_s']['p95']} s",
+                   f"- Chamadas que precisaram de nova tentativa (limite do nível gratuito ou servidor ocupado): "
+                   f"{r['chamadas_com_nova_tentativa']}"
+                   + (f"; sem nova tentativa, mediana {sem['mediana']} s" if sem else ""),
+                   f"- Busca no RAG: mediana {r['latencia_busca_rag_s']['mediana']} s",
+                   f"- Tokens por uso: {r['tokens_entrada_media']} de entrada, {r['tokens_saida_media']} de saída, "
+                   f"{r['tokens_raciocinio_media']} de raciocínio",
+                   f"- Custo: US$ {r['custo_por_uso_usd']} por uso, US$ {r['custo_por_1000_usos_usd']} a cada 1.000 usos "
+                   f"(preço do nível pago)",
+                   f"- Textos aprovados pelo validador: {r['aprovados_validador']}"]
+        if r["falhas"]:
+            md.append(f"- Motivos das falhas: {'; '.join(r['motivos_das_falhas'])}")
+        md.append("")
     (pasta / "custo_latencia.md").write_text("\n".join(md), encoding="utf-8")
     print(f"Resultado salvo em {pasta}")
     return resultado

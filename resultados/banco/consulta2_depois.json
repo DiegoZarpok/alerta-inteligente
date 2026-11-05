@@ -1,0 +1,217 @@
+{
+  "explainVersion": "1",
+  "queryPlanner": {
+    "namespace": "alerta_inteligente.alertas",
+    "parsedQuery": {
+      "$and": [
+        {
+          "setores": {
+            "$eq": "Setor Ribeirinho 03"
+          }
+        },
+        {
+          "enviado_em": {
+            "$lt": "2016-01-01T00:00:00.000Z"
+          }
+        },
+        {
+          "enviado_em": {
+            "$gte": "2015-01-01T00:00:00.000Z"
+          }
+        }
+      ]
+    },
+    "indexFilterSet": false,
+    "queryHash": "9AFA931A",
+    "planCacheShapeHash": "9AFA931A",
+    "planCacheKey": "6ADC7FD3",
+    "optimizationTimeMillis": 1,
+    "maxIndexedOrSolutionsReached": false,
+    "maxIndexedAndSolutionsReached": false,
+    "maxScansToExplodeReached": false,
+    "prunedSimilarIndexes": false,
+    "winningPlan": {
+      "isCached": false,
+      "stage": "LIMIT",
+      "limitAmount": 50,
+      "inputStage": {
+        "stage": "FETCH",
+        "inputStage": {
+          "stage": "IXSCAN",
+          "keyPattern": {
+            "setores": 1,
+            "enviado_em": -1
+          },
+          "indexName": "idx_setor_data",
+          "isMultiKey": true,
+          "multiKeyPaths": {
+            "setores": [
+              "setores"
+            ],
+            "enviado_em": []
+          },
+          "isUnique": false,
+          "isSparse": false,
+          "isPartial": false,
+          "indexVersion": 2,
+          "direction": "forward",
+          "indexBounds": {
+            "setores": [
+              "[\"Setor Ribeirinho 03\", \"Setor Ribeirinho 03\"]"
+            ],
+            "enviado_em": [
+              "(new Date(1451606400000), new Date(1420070400000)]"
+            ]
+          }
+        }
+      }
+    },
+    "rejectedPlans": [
+      {
+        "isCached": false,
+        "stage": "LIMIT",
+        "limitAmount": 50,
+        "inputStage": {
+          "stage": "FETCH",
+          "filter": {
+            "setores": {
+              "$eq": "Setor Ribeirinho 03"
+            }
+          },
+          "inputStage": {
+            "stage": "IXSCAN",
+            "keyPattern": {
+              "enviado_em": -1
+            },
+            "indexName": "enviado_em_-1",
+            "isMultiKey": false,
+            "multiKeyPaths": {
+              "enviado_em": []
+            },
+            "isUnique": false,
+            "isSparse": false,
+            "isPartial": false,
+            "indexVersion": 2,
+            "direction": "forward",
+            "indexBounds": {
+              "enviado_em": [
+                "(new Date(1451606400000), new Date(1420070400000)]"
+              ]
+            }
+          }
+        }
+      }
+    ]
+  },
+  "executionStats": {
+    "executionSuccess": true,
+    "nReturned": 50,
+    "executionTimeMillis": 1,
+    "totalKeysExamined": 50,
+    "totalDocsExamined": 50,
+    "executionStages": {
+      "isCached": false,
+      "stage": "LIMIT",
+      "nReturned": 50,
+      "executionTimeMillisEstimate": 0,
+      "works": 51,
+      "advanced": 50,
+      "needTime": 0,
+      "needYield": 0,
+      "saveState": 0,
+      "restoreState": 0,
+      "isEOF": 1,
+      "limitAmount": 50,
+      "inputStage": {
+        "stage": "FETCH",
+        "nReturned": 50,
+        "executionTimeMillisEstimate": 0,
+        "works": 50,
+        "advanced": 50,
+        "needTime": 0,
+        "needYield": 0,
+        "saveState": 0,
+        "restoreState": 0,
+        "isEOF": 0,
+        "docsExamined": 50,
+        "alreadyHasObj": 0,
+        "inputStage": {
+          "stage": "IXSCAN",
+          "nReturned": 50,
+          "executionTimeMillisEstimate": 0,
+          "works": 50,
+          "advanced": 50,
+          "needTime": 0,
+          "needYield": 0,
+          "saveState": 0,
+          "restoreState": 0,
+          "isEOF": 0,
+          "keyPattern": {
+            "setores": 1,
+            "enviado_em": -1
+          },
+          "indexName": "idx_setor_data",
+          "isMultiKey": true,
+          "multiKeyPaths": {
+            "setores": [
+              "setores"
+            ],
+            "enviado_em": []
+          },
+          "isUnique": false,
+          "isSparse": false,
+          "isPartial": false,
+          "indexVersion": 2,
+          "direction": "forward",
+          "indexBounds": {
+            "setores": [
+              "[\"Setor Ribeirinho 03\", \"Setor Ribeirinho 03\"]"
+            ],
+            "enviado_em": [
+              "(new Date(1451606400000), new Date(1420070400000)]"
+            ]
+          },
+          "keysExamined": 50,
+          "seeks": 1,
+          "dupsTested": 50,
+          "dupsDropped": 0
+        }
+      }
+    }
+  },
+  "queryShapeHash": "16200F9C4F5259C977B6352A2C890551545329BB0F15DFAEB1E1898BE28A26AA",
+  "command": {
+    "find": "alertas",
+    "filter": {
+      "setores": "Setor Ribeirinho 03",
+      "enviado_em": {
+        "$gte": "2015-01-01T00:00:00.000Z",
+        "$lt": "2016-01-01T00:00:00.000Z"
+      }
+    },
+    "sort": {
+      "enviado_em": -1
+    },
+    "limit": 50,
+    "$db": "alerta_inteligente"
+  },
+  "serverInfo": {
+    "host": "Diego",
+    "port": 27017,
+    "version": "8.0.34",
+    "gitVersion": "51db4515a6597aedcf6188ee4e48a27e65b065ae"
+  },
+  "serverParameters": {
+    "internalQueryFacetBufferSizeBytes": 104857600,
+    "internalQueryFacetMaxOutputDocSizeBytes": 104857600,
+    "internalLookupStageIntermediateDocumentMaxSizeBytes": 104857600,
+    "internalDocumentSourceGroupMaxMemoryBytes": 104857600,
+    "internalQueryMaxBlockingSortMemoryUsageBytes": 104857600,
+    "internalQueryProhibitBlockingMergeOnMongoS": 0,
+    "internalQueryMaxAddToSetBytes": 104857600,
+    "internalDocumentSourceSetWindowFieldsMaxMemoryBytes": 104857600,
+    "internalQueryFrameworkControl": "trySbeRestricted",
+    "internalQueryPlannerIgnoreIndexWithCollationForRegex": 1
+  },
+  "ok": 1
+}

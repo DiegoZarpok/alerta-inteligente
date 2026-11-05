@@ -1,0 +1,8 @@
+series_hidrologicas: 2781363 documentos | alertas: 300000 documentos
+(índices gerais de alertas escondidos durante a medição antes: enviado_em_-1)
+--- ANTES dos índices ---
+Consulta 1 (chuva 72 h) | tempo: 3592 ms | documentos lidos: 2781363 | chaves de índice lidas: 0 | COLLSCAN (lê a coleção toda) | estágios: GROUP > COLLSCAN
+Consulta 2 (alertas por setor) | tempo: 1071 ms | documentos lidos: 300000 | chaves de índice lidas: 0 | COLLSCAN (lê a coleção toda) | estágios: SORT > COLLSCAN
+--- DEPOIS dos índices ---
+Consulta 1 (chuva 72 h) | tempo: 2 ms | documentos lidos: 73 | chaves de índice lidas: 73 | IXSCAN (usa índice) | estágios: GROUP > FETCH > IXSCAN
+Consulta 2 (alertas por setor) | tempo: 1 ms | documentos lidos: 50 | chaves de índice lidas: 50 | IXSCAN (usa índice) | estágios: LIMIT > FETCH > IXSCAN

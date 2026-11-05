@@ -102,5 +102,6 @@ class Bot:
                 print("Bot encerrado.")
                 return
             except requests.RequestException as erro:
-                print(f"[bot] sem conexão com o Telegram ({erro}); tentando de novo em 5 s")
+                # só o tipo do erro: a mensagem completa traz a URL com o token do bot
+                print(f"[bot] sem conexão com o Telegram ({type(erro).__name__}); tentando de novo em 5 s")
                 time.sleep(5)

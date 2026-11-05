@@ -21,6 +21,11 @@ from .. import config
 SERVICO = "https://telemetriaws1.ana.gov.br/ServiceANA.asmx"
 TIPO = {"cota": "1", "chuva": "2", "vazao": "3"}
 PREFIXO = {"cota": "Cota", "chuva": "Chuva", "vazao": "Vazao"}
+# Status de cada dia na ANA: 0 = branco, 1 = real, 2 = estimado, 3 = duvidoso,
+# 4 = régua seca (vazão) ou acumulado de vários dias (chuva). Nos arquivos aparecem
+# também 6 e 7, sem descrição na legenda, sempre com valor 0,0 (falta de leitura).
+# Só ficam os dias com status 1, 2 ou 3; status em branco mantém o valor.
+STATUS_VALIDOS = {1, 2, 3}
 
 ESTACOES = {
     # fluviométricas (vazão)
@@ -71,11 +76,26 @@ def _expandir_mes(mes_inicio, valores_por_dia, consistencia):
             yield date(mes_inicio.year, mes_inicio.month, dia), valor, consistencia
 
 
+def _valores_do_mes(campos, prefixo):
+    """Pega Vazao01..Vazao31 (ou Chuva01..) descartando os dias com status inválido."""
+    padrao = re.compile(rf"^{prefixo}(\d{{2}})$")
+    valores = {}
+    for nome, texto in campos.items():
+        m = padrao.match((nome or "").strip())
+        if not m:
+            continue
+        valor = _numero(texto)
+        status = _numero(campos.get(f"{nome.strip()}Status"))
+        if valor is not None and status is not None and int(status) not in STATUS_VALIDOS:
+            valor = None
+        valores[int(m.group(1))] = valor
+    return valores
+
+
 def ler_xml_serie(conteudo, variavel):
     """Lê a resposta do HidroSerieHistorica. Devolve lista de (data, valor, nivel_consistencia)."""
     raiz = ET.fromstring(conteudo)
     prefixo = PREFIXO[variavel]
-    padrao = re.compile(rf"^{prefixo}(\d{{2}})$")
     linhas = []
     for no in raiz.iter():
         if _local(no.tag) != "SerieHistorica":
@@ -85,11 +105,7 @@ def ler_xml_serie(conteudo, variavel):
             continue
         mes = _data(campos["DataHora"]).replace(day=1)
         consistencia = int(_numero(campos.get("NivelConsistencia")) or 1)
-        valores = {}
-        for nome, texto in campos.items():
-            m = padrao.match(nome)
-            if m:
-                valores[int(m.group(1))] = _numero(texto)
+        valores = _valores_do_mes(campos, prefixo)
         linhas.extend(_expandir_mes(mes, valores, consistencia))
     return linhas
 
@@ -102,7 +118,6 @@ def ler_csv_hidroweb(texto, variavel):
         raise ValueError("cabeçalho 'EstacaoCodigo' não encontrado no CSV")
     leitor = csv.DictReader(io.StringIO("\n".join(linhas_txt[inicio:])), delimiter=";")
     prefixo = PREFIXO[variavel]
-    padrao = re.compile(rf"^{prefixo}(\d{{2}})$")
     linhas = []
     for reg in leitor:
         texto_data = reg.get("Data") or reg.get("DataHora")
@@ -110,7 +125,7 @@ def ler_csv_hidroweb(texto, variavel):
             continue
         mes = _data(texto_data).replace(day=1)
         consistencia = int(_numero(reg.get("NivelConsistencia")) or 1)
-        valores = {int(m.group(1)): _numero(v) for k, v in reg.items() if k and (m := padrao.match(k.strip()))}
+        valores = _valores_do_mes(reg, prefixo)
         linhas.extend(_expandir_mes(mes, valores, consistencia))
     return linhas
 
@@ -193,12 +208,24 @@ def ler_bruto(codigo, variavel):
         with open(caminho, encoding="utf-8") as f:
             return [(date.fromisoformat(r["data"]), _numero(r["valor"]), int(r["nivel_consistencia"]))
                     for r in csv.DictReader(f)]
-    manuais = [p for p in config.PASTA_BRUTOS.glob("*.csv") if codigo.lstrip("0") in p.name and p != caminho]
-    for p in manuais:
-        texto = p.read_bytes().decode("latin-1")
-        if "EstacaoCodigo" in texto:
-            return preferir_consistidos(ler_csv_hidroweb(texto, variavel))
+    p = arquivo_hidroweb(codigo, variavel)
+    if p:
+        return preferir_consistidos(ler_csv_hidroweb(p.read_bytes().decode("latin-1"), variavel))
     return []
+
+
+def arquivo_hidroweb(codigo, variavel):
+    """Procura em dados/brutos o CSV baixado à mão no Hidroweb (ex.: 53180000_Vazoes.csv, 1439001_Chuvas.csv)."""
+    if not config.PASTA_BRUTOS.exists():
+        return None
+    proprio = f"{codigo}_{variavel}.csv"
+    for p in sorted(config.PASTA_BRUTOS.glob("*.csv")):
+        if p.name == proprio or codigo.lstrip("0") not in p.name:
+            continue
+        texto = p.read_bytes().decode("latin-1")
+        if "EstacaoCodigo" in texto and f";{PREFIXO[variavel]}01;" in texto:
+            return p
+    return None
 
 
 def montar_serie_diaria():

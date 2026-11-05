@@ -1,0 +1,12 @@
+variavel,beta
+chuva24,1.8961
+chuva48,1.3167
+chuva72,-0.7456
+vazao,-1.2498
+delta_vazao,0.1030
+media_movel_7d,1.4593
+vazao_ferradas,1.4640
+delta_ferradas,0.1103
+mes_sen,0.7567
+mes_cos,1.9551
+intercepto (beta0),-8.1383

@@ -44,15 +44,18 @@ class Gemini:
         cabecalho = {"x-goog-api-key": self.chave, "Content-Type": "application/json"}
         com_raciocinio = True
         inicio = time.perf_counter()
+        historico = []  # códigos de cada tentativa (ex.: [429, 200]), para explicar a latência
         for tentativa in range(4):
             try:
                 r = requests.post(url, headers=cabecalho, timeout=60,
                                   json=self._corpo(sistema, usuario, json_saida, max_tokens, com_raciocinio))
             except requests.RequestException as e:
+                historico.append(type(e).__name__)
                 if tentativa == 3:
-                    raise LLMIndisponivel(f"sem conexão com o Gemini: {e}")
+                    raise LLMIndisponivel(f"sem conexão com o Gemini ({type(e).__name__}); tentativas: {historico}")
                 time.sleep(2 ** tentativa)
                 continue
+            historico.append(r.status_code)
             if r.status_code == 200:
                 break
             if r.status_code == 400 and "thinking" in r.text.lower() and com_raciocinio:
@@ -61,9 +64,9 @@ class Gemini:
             if r.status_code in (429, 500, 503) and tentativa < 3:
                 time.sleep(2 ** (tentativa + 1))
                 continue
-            raise LLMIndisponivel(f"Gemini respondeu {r.status_code}: {r.text[:300]}")
+            raise LLMIndisponivel(f"Gemini respondeu {r.status_code} (tentativas: {historico}): {r.text[:300]}")
         else:
-            raise LLMIndisponivel("o Gemini não respondeu depois de 4 tentativas")
+            raise LLMIndisponivel(f"o Gemini não respondeu depois de 4 tentativas: {historico}")
         latencia = time.perf_counter() - inicio
 
         dados = r.json()
@@ -81,4 +84,4 @@ class Gemini:
         return {"texto": texto, "modelo": self.modelo, "tokens_entrada": entrada, "tokens_saida": saida,
                 "tokens_raciocinio": raciocinio, "latencia_s": round(latencia, 3),
                 "custo_usd": None if custo is None else round(custo, 7),
-                "finalizacao": candidatos[0].get("finishReason")}
+                "finalizacao": candidatos[0].get("finishReason"), "tentativas": historico}

@@ -22,6 +22,7 @@ from . import limiares
 from .dados import VARIAVEIS, carregar_tabela, conjunto_de_treino, eventos
 
 matplotlib.use("Agg")
+import matplotlib.dates as mdates  # noqa: E402
 import matplotlib.pyplot as plt  # noqa: E402
 
 ARQUIVO_MODELO = config.PASTA_MODELOS / "modelo_risco.joblib"
@@ -129,6 +130,8 @@ def _figura_evento(dados, prob, evento, limiar, pasta):
     nomes = [n for a in (ax, ax2, ax3) for n in a.get_legend_handles_labels()[1]]
     ax.legend(linhas, nomes, fontsize=7, loc="upper left")
     ax.set_title(f"Cheia de {evento['inicio']}: pico de {evento['pico_m3s']:.0f} m³/s")
+    ax.xaxis.set_major_locator(mdates.DayLocator(interval=2))
+    ax.xaxis.set_major_formatter(mdates.DateFormatter("%d/%m/%Y"))
     fig.autofmt_xdate()
     fig.tight_layout()
     nome = f"evento_{evento['inicio']}.png"

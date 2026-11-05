@@ -1,0 +1,76 @@
+{
+  "gemini-3.5-flash-lite": {
+    "repeticoes": 10,
+    "respostas_do_gemini": 10,
+    "falhas": 0,
+    "motivos_das_falhas": [],
+    "preco_por_milhao_usd": {
+      "entrada": 0.3,
+      "saida": 2.5
+    },
+    "latencia_total_s": {
+      "media": 4.779,
+      "mediana": 1.771,
+      "p95": 15.936,
+      "min": 0.95,
+      "max": 15.936
+    },
+    "latencia_total_sem_nova_tentativa_s": {
+      "media": 2.217,
+      "mediana": 1.43,
+      "p95": 7.083,
+      "min": 0.95,
+      "max": 7.083
+    },
+    "chamadas_com_nova_tentativa": 2,
+    "latencia_llm_s": {
+      "media": 4.16,
+      "mediana": 1.409,
+      "p95": 15.919,
+      "min": 0.929,
+      "max": 15.919
+    },
+    "latencia_busca_rag_s": {
+      "media": 0.617,
+      "mediana": 0.02,
+      "p95": 5.996,
+      "min": 0.014,
+      "max": 5.996
+    },
+    "tokens_entrada_media": 956,
+    "tokens_saida_media": 105,
+    "tokens_raciocinio_media": 0,
+    "custo_por_uso_usd": 0.000549,
+    "custo_por_1000_usos_usd": 0.549,
+    "aprovados_validador": "10/10"
+  },
+  "gemini-3.8-flash": {
+    "repeticoes": 10,
+    "respostas_do_gemini": 0,
+    "falhas": 10,
+    "motivos_das_falhas": [
+      "Gemini respondeu 429 (tentativas: [429, 429, 429, 429]): {\n  \"error\": {\n    \"code\": 429,\n    \"message\": \"You exceeded yo"
+    ],
+    "preco_por_milhao_usd": {
+      "entrada": 0.75,
+      "saida": 3.75
+    },
+    "latencia_ate_desistir_s": {
+      "media": 15.695,
+      "mediana": 15.68,
+      "p95": 15.81,
+      "min": 15.64,
+      "max": 15.81
+    }
+  },
+  "modelo_previsao": {
+    "nome": "regressao_logistica",
+    "latencia_s": {
+      "media": 0.001,
+      "mediana": 0.0,
+      "p95": 0.001,
+      "min": 0.0,
+      "max": 0.019
+    }
+  }
+}

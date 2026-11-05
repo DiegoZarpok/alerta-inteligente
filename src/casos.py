@@ -28,8 +28,12 @@ def _datas_de_teste():
         if len(ev):
             maior = ev.sort_values("pico_m3s", ascending=False).iloc[0]
             vespera = (pd.Timestamp(maior["inicio"]) - pd.Timedelta(days=1)).date()
-    secos = q[(q.index.month.isin([8, 9, 10])) & q.notna()]
-    seco = secos.idxmin().date() if len(secos) else None
+    # dia seco: estiagem (agosto a outubro), sem chuva nas 72 h anteriores e com todas as variáveis
+    # do modelo disponíveis (inclusive Ferradas); entre esses, o de menor vazão na Contorno
+    from .modelo.dados import VARIAVEIS, construir_variaveis
+    v = construir_variaveis(tabela).loc[f"{config.ANO_CORTE_TREINO}-01-01":].dropna(subset=VARIAVEIS)
+    secos = v[(v.index.month.isin([8, 9, 10])) & (v["chuva72_mm"] < 1)]
+    seco = secos["vazao_m3s"].idxmin().date() if len(secos) else None
     return vespera, seco
 
 

@@ -1,0 +1,323 @@
+{
+  "explainVersion": "2",
+  "queryPlanner": {
+    "namespace": "alerta_inteligente.series_hidrologicas",
+    "parsedQuery": {
+      "$and": [
+        {
+          "estacao_id": {
+            "$eq": "VOL-05"
+          }
+        },
+        {
+          "data_hora": {
+            "$lte": "2025-12-23T23:00:00.000Z"
+          }
+        },
+        {
+          "data_hora": {
+            "$gte": "2025-12-20T23:00:00.000Z"
+          }
+        }
+      ]
+    },
+    "indexFilterSet": false,
+    "queryHash": "8B51FB43",
+    "planCacheShapeHash": "8B51FB43",
+    "planCacheKey": "C18A0D64",
+    "optimizationTimeMillis": 0,
+    "optimizedPipeline": true,
+    "maxIndexedOrSolutionsReached": false,
+    "maxIndexedAndSolutionsReached": false,
+    "maxScansToExplodeReached": false,
+    "prunedSimilarIndexes": false,
+    "winningPlan": {
+      "isCached": false,
+      "queryPlan": {
+        "stage": "GROUP",
+        "planNodeId": 4,
+        "inputStage": {
+          "stage": "FETCH",
+          "planNodeId": 2,
+          "inputStage": {
+            "stage": "IXSCAN",
+            "planNodeId": 1,
+            "keyPattern": {
+              "estacao_id": 1,
+              "data_hora": -1
+            },
+            "indexName": "idx_estacao_data",
+            "isMultiKey": false,
+            "multiKeyPaths": {
+              "estacao_id": [],
+              "data_hora": []
+            },
+            "isUnique": false,
+            "isSparse": false,
+            "isPartial": false,
+            "indexVersion": 2,
+            "direction": "forward",
+            "indexBounds": {
+              "estacao_id": [
+                "[\"VOL-05\", \"VOL-05\"]"
+              ],
+              "data_hora": [
+                "[new Date(1766530800000), new Date(1766271600000)]"
+              ]
+            }
+          }
+        }
+      },
+      "slotBasedPlan": {
+        "slots": "$$RESULT=s14 env: { s5 = {\"estacao_id\" : 1, \"data_hora\" : -1} }",
+        "stages": "[4] project [s14 = newBsonObj(\"_id\", s11, \"chuva_72h\", s13)] \n[4] project [s13 = doubleDoubleSumFinalize(s12)] \n[4] group [s11] [s12 = aggDoubleDoubleSum(s8)] spillSlots[s10] mergingExprs[aggMergeDoubleDoubleSums(s10)] \n[4] project [s11 = (s9 ?: null)] \n[2] nlj inner [] [s1, s2, s3, s4, s5] \n    left \n        [1] ixseek KS(3C564F4C2D303500877FFFFE64B28F267F0104) KS(3C564F4C2D303500877FFFFE64C2023A7FFE04) s4 s1 s2 s3 [] @\"901c3888-d854-433c-a4d2-8df7bf86dc2a\" @\"idx_estacao_data\" true \n    right \n        [2] limit 1ll \n        [2] seek s1 s6 s7 s2 s3 s4 s5 none none [s8 = chuva_mm, s9 = estacao_id] @\"901c3888-d854-433c-a4d2-8df7bf86dc2a\" true false \n"
+      }
+    },
+    "rejectedPlans": []
+  },
+  "executionStats": {
+    "executionSuccess": true,
+    "nReturned": 1,
+    "executionTimeMillis": 2,
+    "totalKeysExamined": 73,
+    "totalDocsExamined": 73,
+    "executionStages": {
+      "stage": "project",
+      "planNodeId": 4,
+      "nReturned": 1,
+      "executionTimeMillisEstimate": 0,
+      "opens": 1,
+      "closes": 1,
+      "saveState": 0,
+      "restoreState": 0,
+      "isEOF": 1,
+      "projections": {
+        "14": "newBsonObj(\"_id\", s11, \"chuva_72h\", s13) "
+      },
+      "inputStage": {
+        "stage": "project",
+        "planNodeId": 4,
+        "nReturned": 1,
+        "executionTimeMillisEstimate": 0,
+        "opens": 1,
+        "closes": 1,
+        "saveState": 0,
+        "restoreState": 0,
+        "isEOF": 1,
+        "projections": {
+          "13": "doubleDoubleSumFinalize(s12) "
+        },
+        "inputStage": {
+          "stage": "group",
+          "planNodeId": 4,
+          "nReturned": 1,
+          "executionTimeMillisEstimate": 0,
+          "opens": 1,
+          "closes": 1,
+          "saveState": 0,
+          "restoreState": 0,
+          "isEOF": 1,
+          "groupBySlots": [
+            {
+              "high": 0,
+              "low": 11,
+              "unsigned": false
+            }
+          ],
+          "expressions": {
+            "12": "aggDoubleDoubleSum(s8) ",
+            "initExprs": {
+              "12": null
+            }
+          },
+          "mergingExprs": {
+            "10": "aggMergeDoubleDoubleSums(s10) "
+          },
+          "usedDisk": false,
+          "spills": 0,
+          "spilledBytes": 0,
+          "spilledRecords": 0,
+          "spilledDataStorageSize": 0,
+          "inputStage": {
+            "stage": "project",
+            "planNodeId": 4,
+            "nReturned": 73,
+            "executionTimeMillisEstimate": 0,
+            "opens": 1,
+            "closes": 1,
+            "saveState": 0,
+            "restoreState": 0,
+            "isEOF": 1,
+            "projections": {
+              "11": "(s9 ?: null) "
+            },
+            "inputStage": {
+              "stage": "nlj",
+              "planNodeId": 2,
+              "nReturned": 73,
+              "executionTimeMillisEstimate": 0,
+              "opens": 1,
+              "closes": 1,
+              "saveState": 0,
+              "restoreState": 0,
+              "isEOF": 1,
+              "totalDocsExamined": 73,
+              "totalKeysExamined": 73,
+              "collectionScans": 0,
+              "collectionSeeks": 73,
+              "indexScans": 0,
+              "indexSeeks": 1,
+              "indexesUsed": [
+                "idx_estacao_data"
+              ],
+              "innerOpens": 73,
+              "innerCloses": 1,
+              "outerProjects": [],
+              "outerCorrelated": [
+                {
+                  "high": 0,
+                  "low": 1,
+                  "unsigned": false
+                },
+                {
+                  "high": 0,
+                  "low": 2,
+                  "unsigned": false
+                },
+                {
+                  "high": 0,
+                  "low": 3,
+                  "unsigned": false
+                },
+                {
+                  "high": 0,
+                  "low": 4,
+                  "unsigned": false
+                },
+                {
+                  "high": 0,
+                  "low": 5,
+                  "unsigned": false
+                }
+              ],
+              "outerStage": {
+                "stage": "ixseek",
+                "planNodeId": 1,
+                "nReturned": 73,
+                "executionTimeMillisEstimate": 0,
+                "opens": 1,
+                "closes": 1,
+                "saveState": 0,
+                "restoreState": 0,
+                "isEOF": 1,
+                "indexName": "idx_estacao_data",
+                "keysExamined": 73,
+                "seeks": 1,
+                "numReads": 74,
+                "indexKeySlot": 4,
+                "recordIdSlot": 1,
+                "snapshotIdSlot": 2,
+                "indexIdentSlot": 3,
+                "outputSlots": [],
+                "indexKeysToInclude": "00000000000000000000000000000000",
+                "seekKeyLow": "KS(3C564F4C2D303500877FFFFE64B28F267F0104) ",
+                "seekKeyHigh": "KS(3C564F4C2D303500877FFFFE64C2023A7FFE04) "
+              },
+              "innerStage": {
+                "stage": "limit",
+                "planNodeId": 2,
+                "nReturned": 73,
+                "executionTimeMillisEstimate": 0,
+                "opens": 73,
+                "closes": 1,
+                "saveState": 0,
+                "restoreState": 0,
+                "isEOF": 1,
+                "limit": 1,
+                "inputStage": {
+                  "stage": "seek",
+                  "planNodeId": 2,
+                  "nReturned": 73,
+                  "executionTimeMillisEstimate": 0,
+                  "opens": 73,
+                  "closes": 1,
+                  "saveState": 0,
+                  "restoreState": 0,
+                  "isEOF": 0,
+                  "numReads": 73,
+                  "recordSlot": 6,
+                  "recordIdSlot": 7,
+                  "seekRecordIdSlot": 1,
+                  "snapshotIdSlot": 2,
+                  "indexIdentSlot": 3,
+                  "indexKeySlot": 4,
+                  "indexKeyPatternSlot": 5,
+                  "scanFieldNames": [
+                    "chuva_mm",
+                    "estacao_id"
+                  ],
+                  "scanFieldSlots": [
+                    {
+                      "high": 0,
+                      "low": 8,
+                      "unsigned": false
+                    },
+                    {
+                      "high": 0,
+                      "low": 9,
+                      "unsigned": false
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "queryShapeHash": "872ED1E27AD54E17F02FE39051586BC763160D19A8BA9E56656EA5F14CE50FE5",
+  "command": {
+    "aggregate": "series_hidrologicas",
+    "pipeline": [
+      {
+        "$match": {
+          "estacao_id": "VOL-05",
+          "data_hora": {
+            "$gte": "2025-12-20T23:00:00.000Z",
+            "$lte": "2025-12-23T23:00:00.000Z"
+          }
+        }
+      },
+      {
+        "$group": {
+          "_id": "$estacao_id",
+          "chuva_72h": {
+            "$sum": "$chuva_mm"
+          }
+        }
+      }
+    ],
+    "cursor": {},
+    "$db": "alerta_inteligente"
+  },
+  "serverInfo": {
+    "host": "Diego",
+    "port": 27017,
+    "version": "8.0.34",
+    "gitVersion": "51db4515a6597aedcf6188ee4e48a27e65b065ae"
+  },
+  "serverParameters": {
+    "internalQueryFacetBufferSizeBytes": 104857600,
+    "internalQueryFacetMaxOutputDocSizeBytes": 104857600,
+    "internalLookupStageIntermediateDocumentMaxSizeBytes": 104857600,
+    "internalDocumentSourceGroupMaxMemoryBytes": 104857600,
+    "internalQueryMaxBlockingSortMemoryUsageBytes": 104857600,
+    "internalQueryProhibitBlockingMergeOnMongoS": 0,
+    "internalQueryMaxAddToSetBytes": 104857600,
+    "internalDocumentSourceSetWindowFieldsMaxMemoryBytes": 104857600,
+    "internalQueryFrameworkControl": "trySbeRestricted",
+    "internalQueryPlannerIgnoreIndexWithCollationForRegex": 1
+  },
+  "ok": 1
+}

@@ -1,0 +1,166 @@
+{
+  "explainVersion": "1",
+  "queryPlanner": {
+    "namespace": "alerta_inteligente.alertas",
+    "parsedQuery": {
+      "$and": [
+        {
+          "setores": {
+            "$eq": "Setor Ribeirinho 03"
+          }
+        },
+        {
+          "enviado_em": {
+            "$lt": "2016-01-01T00:00:00.000Z"
+          }
+        },
+        {
+          "enviado_em": {
+            "$gte": "2015-01-01T00:00:00.000Z"
+          }
+        }
+      ]
+    },
+    "indexFilterSet": false,
+    "queryHash": "9AFA931A",
+    "planCacheShapeHash": "9AFA931A",
+    "planCacheKey": "C910443A",
+    "optimizationTimeMillis": 1,
+    "maxIndexedOrSolutionsReached": false,
+    "maxIndexedAndSolutionsReached": false,
+    "maxScansToExplodeReached": false,
+    "prunedSimilarIndexes": false,
+    "winningPlan": {
+      "isCached": false,
+      "stage": "SORT",
+      "sortPattern": {
+        "enviado_em": -1
+      },
+      "memLimit": 104857600,
+      "limitAmount": 50,
+      "type": "simple",
+      "inputStage": {
+        "stage": "COLLSCAN",
+        "filter": {
+          "$and": [
+            {
+              "setores": {
+                "$eq": "Setor Ribeirinho 03"
+              }
+            },
+            {
+              "enviado_em": {
+                "$lt": "2016-01-01T00:00:00.000Z"
+              }
+            },
+            {
+              "enviado_em": {
+                "$gte": "2015-01-01T00:00:00.000Z"
+              }
+            }
+          ]
+        },
+        "direction": "forward"
+      }
+    },
+    "rejectedPlans": []
+  },
+  "executionStats": {
+    "executionSuccess": true,
+    "nReturned": 50,
+    "executionTimeMillis": 1071,
+    "totalKeysExamined": 0,
+    "totalDocsExamined": 300000,
+    "executionStages": {
+      "isCached": false,
+      "stage": "SORT",
+      "nReturned": 50,
+      "executionTimeMillisEstimate": 1041,
+      "works": 300052,
+      "advanced": 50,
+      "needTime": 300001,
+      "needYield": 0,
+      "saveState": 69,
+      "restoreState": 69,
+      "isEOF": 1,
+      "sortPattern": {
+        "enviado_em": -1
+      },
+      "memLimit": 104857600,
+      "limitAmount": 50,
+      "type": "simple",
+      "totalDataSizeSorted": 14908,
+      "usedDisk": false,
+      "spills": 0,
+      "spilledDataStorageSize": 0,
+      "inputStage": {
+        "stage": "COLLSCAN",
+        "filter": {
+          "$and": [
+            {
+              "setores": {
+                "$eq": "Setor Ribeirinho 03"
+              }
+            },
+            {
+              "enviado_em": {
+                "$lt": "2016-01-01T00:00:00.000Z"
+              }
+            },
+            {
+              "enviado_em": {
+                "$gte": "2015-01-01T00:00:00.000Z"
+              }
+            }
+          ]
+        },
+        "nReturned": 3236,
+        "executionTimeMillisEstimate": 980,
+        "works": 300001,
+        "advanced": 3236,
+        "needTime": 296764,
+        "needYield": 0,
+        "saveState": 69,
+        "restoreState": 69,
+        "isEOF": 1,
+        "direction": "forward",
+        "docsExamined": 300000
+      }
+    }
+  },
+  "queryShapeHash": "16200F9C4F5259C977B6352A2C890551545329BB0F15DFAEB1E1898BE28A26AA",
+  "command": {
+    "find": "alertas",
+    "filter": {
+      "setores": "Setor Ribeirinho 03",
+      "enviado_em": {
+        "$gte": "2015-01-01T00:00:00.000Z",
+        "$lt": "2016-01-01T00:00:00.000Z"
+      }
+    },
+    "sort": {
+      "enviado_em": -1
+    },
+    "limit": 50,
+    "$db": "alerta_inteligente"
+  },
+  "serverInfo": {
+    "host": "Diego",
+    "port": 27017,
+    "version": "8.0.34",
+    "gitVersion": "51db4515a6597aedcf6188ee4e48a27e65b065ae"
+  },
+  "serverParameters": {
+    "internalQueryFacetBufferSizeBytes": 104857600,
+    "internalQueryFacetMaxOutputDocSizeBytes": 104857600,
+    "internalLookupStageIntermediateDocumentMaxSizeBytes": 104857600,
+    "internalDocumentSourceGroupMaxMemoryBytes": 104857600,
+    "internalQueryMaxBlockingSortMemoryUsageBytes": 104857600,
+    "internalQueryProhibitBlockingMergeOnMongoS": 0,
+    "internalQueryMaxAddToSetBytes": 104857600,
+    "internalDocumentSourceSetWindowFieldsMaxMemoryBytes": 104857600,
+    "internalQueryFrameworkControl": "trySbeRestricted",
+    "internalQueryPlannerIgnoreIndexWithCollationForRegex": 1
+  },
+  "ok": 1
+}

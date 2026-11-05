@@ -82,7 +82,8 @@ def escrever(previsao, banco, nome_prompt="alerta", versao=None, llm=None):
     medicao = {"versao_prompt": f"{nome_prompt}_{versao}", "latencia_busca_s": t_busca,
                "trechos_usados": [f"{t['arquivo']}#{t['trecho']}" for t in trechos],
                "modelo_llm": None, "tokens_entrada": 0, "tokens_saida": 0, "tokens_raciocinio": 0,
-               "custo_usd": 0.0, "latencia_llm_s": None, "texto_gerado": None, "problemas": []}
+               "custo_usd": 0.0, "latencia_llm_s": None, "texto_gerado": None, "problemas": [],
+               "tentativas_llm": []}
     texto, origem = None, "gemini"
     try:
         llm = llm or Gemini()
@@ -91,6 +92,7 @@ def escrever(previsao, banco, nome_prompt="alerta", versao=None, llm=None):
                                           "custo_usd")})
         medicao["modelo_llm"] = r["modelo"]
         medicao["latencia_llm_s"] = r["latencia_s"]
+        medicao["tentativas_llm"] = r.get("tentativas", [])
         medicao["texto_gerado"] = r["texto"]
         ok, problemas = validar(r["texto"], _dados_do_texto(previsao))
         medicao["problemas"] = problemas

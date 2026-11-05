@@ -1,0 +1,91 @@
+{
+  "base": "neuralmind/bert-base-portuguese-cased",
+  "epocas": 6,
+  "taxa_aprendizado": 3e-05,
+  "tempo_treino_s": 23.3,
+  "historico": [
+    {
+      "epoca": 1,
+      "perda_treino": 1.0584,
+      "f1_validacao": 0.442
+    },
+    {
+      "epoca": 2,
+      "perda_treino": 0.756,
+      "f1_validacao": 0.832
+    },
+    {
+      "epoca": 3,
+      "perda_treino": 0.377,
+      "f1_validacao": 0.954
+    },
+    {
+      "epoca": 4,
+      "perda_treino": 0.1548,
+      "f1_validacao": 0.931
+    },
+    {
+      "epoca": 5,
+      "perda_treino": 0.0709,
+      "f1_validacao": 0.931
+    },
+    {
+      "epoca": 6,
+      "perda_treino": 0.0463,
+      "f1_validacao": 0.931
+    }
+  ],
+  "tamanhos": {
+    "treino": 204,
+    "validacao": 43,
+    "teste": 53
+  },
+  "resultados": [
+    {
+      "modelo": "BERTimbau base, sem ajuste",
+      "f1_macro": 0.247,
+      "acuracia": 0.377
+    },
+    {
+      "modelo": "BERTimbau ajustado",
+      "f1_macro": 0.981,
+      "acuracia": 0.981,
+      "latencia_ms_por_relato": 4.95
+    },
+    {
+      "modelo": "TF-IDF + regressão logística",
+      "f1_macro": 0.868,
+      "acuracia": 0.868
+    },
+    {
+      "modelo": "Gemini sem treino (gemini-3.5-flash-lite)",
+      "f1_macro": 1.0,
+      "acuracia": 1.0,
+      "latencia_ms_por_relato": 1228.6,
+      "tokens_total": 9035,
+      "respostas_invalidas_ou_sem_resposta": 0
+    }
+  ],
+  "matriz_confusao_bertimbau": [
+    [
+      18,
+      0,
+      0
+    ],
+    [
+      0,
+      18,
+      0
+    ],
+    [
+      0,
+      1,
+      16
+    ]
+  ],
+  "classes": [
+    "confirmado",
+    "observacao",
+    "nao_relacionado"
+  ]
+}

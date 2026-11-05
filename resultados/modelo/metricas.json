@@ -1,0 +1,325 @@
+{
+  "gerado_em": "2026-11-05",
+  "fonte_dados": "ANA (Hidroweb), estações do estudo de Farias e Gomes (2023)",
+  "estacao_alvo": "53180000",
+  "limiar_m3s": 929.9,
+  "tr_alvo_anos": 3.0,
+  "gumbel_uesc": {
+    "u": 491.7,
+    "alfa": 485.4
+  },
+  "periodo_treino": [
+    "1970-08-20",
+    "1999-12-31"
+  ],
+  "periodo_teste": [
+    "2000-01-01",
+    "2019-01-03"
+  ],
+  "dias_treino": 9966,
+  "dias_cheia_treino": 36,
+  "dias_teste": 5870,
+  "dias_cheia_teste": 7,
+  "variaveis": [
+    "chuva24",
+    "chuva48",
+    "chuva72",
+    "vazao",
+    "delta_vazao",
+    "media_movel_7d",
+    "vazao_ferradas",
+    "delta_ferradas",
+    "mes_sen",
+    "mes_cos"
+  ],
+  "resultados": {
+    "persistencia": {
+      "brier": 0.002,
+      "pr_auc": 0.021,
+      "medio": {
+        "corte": 0.3,
+        "recall": 0.143,
+        "precisao": 0.143,
+        "f1": 0.143,
+        "vp": 1,
+        "fp": 6,
+        "fn": 6,
+        "vn": 5857
+      },
+      "alto": {
+        "corte": 0.6,
+        "recall": 0.143,
+        "precisao": 0.143,
+        "f1": 0.143,
+        "vp": 1,
+        "fp": 6,
+        "fn": 6,
+        "vn": 5857
+      },
+      "alarmes_falsos_por_ano": 0.3,
+      "eventos": [
+        {
+          "inicio": "2002-01-07",
+          "fim": "2002-01-07",
+          "dia_pico": "2002-01-07",
+          "pico_m3s": 1028.4,
+          "tr_anos": 3.5,
+          "dias": 1,
+          "p_vespera": 0.0,
+          "avisado": false,
+          "antecedencia_dias": 0
+        },
+        {
+          "inicio": "2002-01-15",
+          "fim": "2002-01-15",
+          "dia_pico": "2002-01-15",
+          "pico_m3s": 1283.6,
+          "tr_anos": 5.6,
+          "dias": 1,
+          "p_vespera": 0.0,
+          "avisado": false,
+          "antecedencia_dias": 0
+        },
+        {
+          "inicio": "2002-02-05",
+          "fim": "2002-02-06",
+          "dia_pico": "2002-02-06",
+          "pico_m3s": 1964.0,
+          "tr_anos": 21.3,
+          "dias": 2,
+          "p_vespera": 0.0,
+          "avisado": false,
+          "antecedencia_dias": 0
+        },
+        {
+          "inicio": "2007-02-15",
+          "fim": "2007-02-15",
+          "dia_pico": "2007-02-15",
+          "pico_m3s": 1091.5,
+          "tr_anos": 4.0,
+          "dias": 1,
+          "p_vespera": 0.0,
+          "avisado": false,
+          "antecedencia_dias": 0
+        },
+        {
+          "inicio": "2007-12-02",
+          "fim": "2007-12-02",
+          "dia_pico": "2007-12-02",
+          "pico_m3s": 999.6,
+          "tr_anos": 3.4,
+          "dias": 1,
+          "p_vespera": 0.0,
+          "avisado": false,
+          "antecedencia_dias": 0
+        },
+        {
+          "inicio": "2007-12-19",
+          "fim": "2007-12-19",
+          "dia_pico": "2007-12-19",
+          "pico_m3s": 1760.4,
+          "tr_anos": 14.2,
+          "dias": 1,
+          "p_vespera": 0.0,
+          "avisado": false,
+          "antecedencia_dias": 0
+        }
+      ],
+      "eventos_avisados": "0/6"
+    },
+    "regressao_logistica": {
+      "brier": 0.0244,
+      "pr_auc": 0.121,
+      "medio": {
+        "corte": 0.3,
+        "recall": 0.857,
+        "precisao": 0.024,
+        "f1": 0.047,
+        "vp": 6,
+        "fp": 242,
+        "fn": 1,
+        "vn": 5621
+      },
+      "alto": {
+        "corte": 0.6,
+        "recall": 0.714,
+        "precisao": 0.032,
+        "f1": 0.061,
+        "vp": 5,
+        "fp": 153,
+        "fn": 2,
+        "vn": 5710
+      },
+      "alarmes_falsos_por_ano": 12.7,
+      "eventos": [
+        {
+          "inicio": "2002-01-07",
+          "fim": "2002-01-07",
+          "dia_pico": "2002-01-07",
+          "pico_m3s": 1028.4,
+          "tr_anos": 3.5,
+          "dias": 1,
+          "p_vespera": 0.546,
+          "avisado": true,
+          "antecedencia_dias": 2
+        },
+        {
+          "inicio": "2002-01-15",
+          "fim": "2002-01-15",
+          "dia_pico": "2002-01-15",
+          "pico_m3s": 1283.6,
+          "tr_anos": 5.6,
+          "dias": 1,
+          "p_vespera": 0.279,
+          "avisado": false,
+          "antecedencia_dias": 0
+        },
+        {
+          "inicio": "2002-02-05",
+          "fim": "2002-02-06",
+          "dia_pico": "2002-02-06",
+          "pico_m3s": 1964.0,
+          "tr_anos": 21.3,
+          "dias": 2,
+          "p_vespera": 0.927,
+          "avisado": true,
+          "antecedencia_dias": 1
+        },
+        {
+          "inicio": "2007-02-15",
+          "fim": "2007-02-15",
+          "dia_pico": "2007-02-15",
+          "pico_m3s": 1091.5,
+          "tr_anos": 4.0,
+          "dias": 1,
+          "p_vespera": 0.868,
+          "avisado": true,
+          "antecedencia_dias": 1
+        },
+        {
+          "inicio": "2007-12-02",
+          "fim": "2007-12-02",
+          "dia_pico": "2007-12-02",
+          "pico_m3s": 999.6,
+          "tr_anos": 3.4,
+          "dias": 1,
+          "p_vespera": 0.994,
+          "avisado": true,
+          "antecedencia_dias": 2
+        },
+        {
+          "inicio": "2007-12-19",
+          "fim": "2007-12-19",
+          "dia_pico": "2007-12-19",
+          "pico_m3s": 1760.4,
+          "tr_anos": 14.2,
+          "dias": 1,
+          "p_vespera": 1.0,
+          "avisado": true,
+          "antecedencia_dias": 3
+        }
+      ],
+      "eventos_avisados": "5/6"
+    },
+    "random_forest": {
+      "brier": 0.0029,
+      "pr_auc": 0.067,
+      "medio": {
+        "corte": 0.3,
+        "recall": 0.286,
+        "precisao": 0.053,
+        "f1": 0.089,
+        "vp": 2,
+        "fp": 36,
+        "fn": 5,
+        "vn": 5827
+      },
+      "alto": {
+        "corte": 0.6,
+        "recall": 0.286,
+        "precisao": 0.167,
+        "f1": 0.211,
+        "vp": 2,
+        "fp": 10,
+        "fn": 5,
+        "vn": 5853
+      },
+      "alarmes_falsos_por_ano": 1.9,
+      "eventos": [
+        {
+          "inicio": "2002-01-07",
+          "fim": "2002-01-07",
+          "dia_pico": "2002-01-07",
+          "pico_m3s": 1028.4,
+          "tr_anos": 3.5,
+          "dias": 1,
+          "p_vespera": 0.005,
+          "avisado": false,
+          "antecedencia_dias": 0
+        },
+        {
+          "inicio": "2002-01-15",
+          "fim": "2002-01-15",
+          "dia_pico": "2002-01-15",
+          "pico_m3s": 1283.6,
+          "tr_anos": 5.6,
+          "dias": 1,
+          "p_vespera": 0.005,
+          "avisado": false,
+          "antecedencia_dias": 0
+        },
+        {
+          "inicio": "2002-02-05",
+          "fim": "2002-02-06",
+          "dia_pico": "2002-02-06",
+          "pico_m3s": 1964.0,
+          "tr_anos": 21.3,
+          "dias": 2,
+          "p_vespera": 0.182,
+          "avisado": false,
+          "antecedencia_dias": 0
+        },
+        {
+          "inicio": "2007-02-15",
+          "fim": "2007-02-15",
+          "dia_pico": "2007-02-15",
+          "pico_m3s": 1091.5,
+          "tr_anos": 4.0,
+          "dias": 1,
+          "p_vespera": 0.034,
+          "avisado": false,
+          "antecedencia_dias": 0
+        },
+        {
+          "inicio": "2007-12-02",
+          "fim": "2007-12-02",
+          "dia_pico": "2007-12-02",
+          "pico_m3s": 999.6,
+          "tr_anos": 3.4,
+          "dias": 1,
+          "p_vespera": 0.205,
+          "avisado": false,
+          "antecedencia_dias": 0
+        },
+        {
+          "inicio": "2007-12-19",
+          "fim": "2007-12-19",
+          "dia_pico": "2007-12-19",
+          "pico_m3s": 1760.4,
+          "tr_anos": 14.2,
+          "dias": 1,
+          "p_vespera": 0.629,
+          "avisado": true,
+          "antecedencia_dias": 1
+        }
+      ],
+      "eventos_avisados": "1/6"
+    }
+  },
+  "modelo_escolhido": "regressao_logistica",
+  "versao_modelo": "regressao_logistica-2026-11-05",
+  "figuras": [
+    "serie_contorno.png",
+    "evento_2002-02-05.png"
+  ]
+}
