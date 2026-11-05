@@ -95,6 +95,12 @@ def baixar_dados(_):
     print("Baixando as séries da ANA (pode levar alguns minutos)...")
     for codigo, info in ana.ESTACOES.items():
         print(f"{codigo} {info['nome']} ({info['tipo']})")
+        manual = ana.arquivo_hidroweb(codigo, info["tipo"])
+        if manual:
+            validos = [l for l in ana.ler_bruto(codigo, info["tipo"]) if l[1] is not None]
+            print(f"  usando o CSV do Hidroweb {manual.name}: {len(validos)} dias com dado, "
+                  f"de {validos[0][0]} a {validos[-1][0]}")
+            continue
         try:
             linhas = ana.baixar_serie(codigo, info["tipo"])
             if not linhas and codigo.startswith("0"):
@@ -208,9 +214,24 @@ def custo_latencia(args):
 
 def consulta(args):
     """Terminal do operador: pergunta em linguagem natural, respondida com a SUA permissão no banco."""
+    from pymongo.errors import OperationFailure
+    from src import config
     from src.ia.consulta import consultar
-    senha = getpass.getpass(f"Senha de {args.usuario}: ")
-    r = consultar(args.usuario, senha, args.pergunta)
+    if args.senha_do_env:
+        # demonstração: usa a senha guardada no .env para esse usuário (a conexão continua sendo a dele)
+        perfil = next((p for p, u in config.USUARIOS.items() if u == args.usuario), None)
+        senha = config.SENHAS.get(perfil) if perfil else None
+        if not senha:
+            sys.exit(f"Não há senha de {args.usuario} no .env.")
+    else:
+        # no Windows, colar com Ctrl+V aqui pode não funcionar: digite a senha ou use --senha-do-env
+        senha = getpass.getpass(f"Senha de {args.usuario}: ")
+    try:
+        r = consultar(args.usuario, senha, args.pergunta)
+    except OperationFailure as erro:
+        if erro.code == 18:
+            sys.exit(f"Senha incorreta para {args.usuario}. Nada foi consultado.")
+        raise
     print(f"Intenção entendida: {r['intencao']} ({r['metodo_intencao']})")
     print(r["mensagem"])
     for linha in r["linhas"]:
@@ -221,9 +242,16 @@ def auditoria(args):
     """Mostra os últimos registros de auditoria (entra como auditor, pela view mascarada)."""
     from src.db import conectar
     banco_aud = conectar("auditor")
+    from datetime import timezone
+    print("quando (horário local) | serviço            | pedido por             | ação         | resultado | coleção     | detalhe")
     for d in banco_aud.vw_auditoria_mascarada.find({}).sort("data_hora", -1).limit(args.n):
-        quando = d["data_hora"].strftime("%d/%m/%Y %H:%M:%S")
-        print(f"{quando} | {d['usuario']:<22} | {d['acao']:<16} | {d['colecao']:<28} | {d.get('detalhe', '')[:70]}")
+        # o MongoDB guarda em UTC; aqui mostra no horário do computador
+        quando = d["data_hora"].replace(tzinfo=timezone.utc).astimezone().strftime("%d/%m/%Y %H:%M:%S")
+        pedido = str(d.get("solicitante") or "-")[:22]
+        permitido = d.get("permitido")
+        resultado = "-" if permitido is None else ("permitido" if permitido else "NEGADO")
+        print(f"{quando}   | {d['usuario']:<18} | {pedido:<22} | {d['acao']:<12} | {resultado:<9} | "
+              f"{d['colecao'][:11]:<11} | {str(d.get('detalhe', ''))[:60]}")
 
 
 def status(_):
@@ -269,6 +297,7 @@ def main():
     c.set_defaults(f=custo_latencia)
     q = sub.add_parser("consulta", help="pergunta ao sistema com a sua permissão no banco")
     q.add_argument("--usuario", required=True)
+    q.add_argument("--senha-do-env", action="store_true", help="usa a senha desse usuário guardada no .env")
     q.add_argument("pergunta")
     q.set_defaults(f=consulta)
     a = sub.add_parser("auditoria", help="mostra os últimos registros de auditoria")

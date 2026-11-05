@@ -38,7 +38,18 @@
 - Chuva: seis postos pluviométricos da ANA usados no estudo. Séries diárias; previsão da vazão média do dia seguinte.
 - Modelo de linguagem: gemini-3.5-flash-lite (o 2.5 Flash ficou restrito a quem já usava), com o mesmo preço orçado na Entrega 1.
 - Busca vetorial feita sobre os vetores guardados no MongoDB local; novo papel papel_n8n; coleta com leitura das séries; bot pode apagar relatos no /sair.
-- Testes automáticos: 30 testes (unidade e ponta a ponta) passando.
+- Testes automáticos: 31 testes (unidade e ponta a ponta) passando.
+
+## Entrega 2: execução com os dados reais (05/11/2026)
+- O serviço automático da ANA respondeu 504 em todas as estações; as 8 séries foram baixadas no portal Hidroweb (CSV). Dias com vazão 0,0 e status 6 ou 7 (sem leitura) passaram a ser descartados.
+- Série diária de 1963 a 2026; 153.363 leituras no MongoDB. Contorno da BR-101 de 1970 a 2019, com 29 cheias acima de 930 m³/s (maior: 26/03/1981, 2.721 m³/s).
+- Modelo: treino de 1970 a 1999, teste de 2000 a 2019 (6 cheias). Regressão logística avisou 5 de 6 cheias na véspera (recall 0,86, precisão 0,02, cerca de 13 alarmes falsos de risco médio por ano); Random Forest 1 de 6; persistência 0 de 6. Escolhida a regressão logística.
+- Banco: autenticação ligada, 296 de 296 operações de permissão conforme o esperado. Volume de 2.781.363 leituras e 300 mil alertas; consulta de chuva em 72 h de 3.592 ms para 2 ms e consulta de alertas por setor de 1.071 ms para 1 ms com os índices.
+- Fluxo completo no n8n (coleta, previsão, RAG + Gemini, validador, Telegram, auditoria). Reprodução da cheia de fevereiro de 2002: na véspera (04/02/2002, vazão de 7 m³/s) o alerta de risco alto (96%) chegou ao grupo do Telegram. No Windows, o n8n precisou de --dns-result-order=ipv4first.
+- Casos de teste da IA: 10 de 10. Prompts v1 e v2 aprovados pelo validador nos 10 cenários.
+- Custo e latência: gemini-3.5-flash-lite com cerca de 1 a 2 s por alerta e cerca de 956 tokens de entrada e 105 de saída; gemini-3.8-flash sem cota no nível gratuito (429), alerta saiu com o texto padrão.
+- IA com permissões: o operador pediu contatos dos moradores pela IA e o banco recusou (código 13); pedido de alertas permitido. Auditoria registra quem pediu, o que foi consultado, se foi permitido e quando.
+- Ajuste fino no Colab (GPU T4, 23 s de treino): BERTimbau sem ajuste F1-macro 0,247; ajustado 0,981; TF-IDF 0,868; Gemini sem treino 1,000, mas com cerca de 1,2 s por relato contra 5 ms do BERTimbau e com o texto do morador saindo para um serviço externo.
 
 ## Próximos passos
-- Rodar com os dados reais da ANA, o Gemini e o n8n e reunir as evidências da Entrega 2.
+- Relatório da Entrega 2 e apresentação.

@@ -60,9 +60,26 @@
   try { banco.series_hidrologicas.dropIndex("idx_estacao_data"); } catch (e) {}
   try { banco.alertas.dropIndex("idx_setor_data"); } catch (e) {}
 
+  // O índice geral { enviado_em: -1 } (criado no script 01 para listar os últimos alertas)
+  // fica escondido durante a medição "antes", para medir a consulta sem nenhum índice que a ajude.
+  // Ele volta a valer logo depois (unhideIndex), sem precisar ser recriado.
+  const escondidos = [];
+  banco.alertas.getIndexes().forEach(function (ix) {
+    if (ix.name === "_id_") return;
+    try { banco.alertas.hideIndex(ix.name); escondidos.push(ix.name); } catch (e) {}
+  });
+  if (escondidos.length) {
+    const aviso = "(índices gerais de alertas escondidos durante a medição antes: " + escondidos.join(", ") + ")";
+    print(aviso); linhas.push(aviso);
+  }
+
   print("--- ANTES dos índices ---"); linhas.push("--- ANTES dos índices ---");
-  medir("Consulta 1 (chuva 72 h)", "consulta1_antes.json", consulta1);
-  medir("Consulta 2 (alertas por setor)", "consulta2_antes.json", consulta2);
+  try {
+    medir("Consulta 1 (chuva 72 h)", "consulta1_antes.json", consulta1);
+    medir("Consulta 2 (alertas por setor)", "consulta2_antes.json", consulta2);
+  } finally {
+    escondidos.forEach(function (nome) { banco.alertas.unhideIndex(nome); });
+  }
 
   banco.series_hidrologicas.createIndex({ estacao_id: 1, data_hora: -1 }, { name: "idx_estacao_data" });
   banco.alertas.createIndex({ setores: 1, enviado_em: -1 }, { name: "idx_setor_data" });

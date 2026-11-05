@@ -94,6 +94,18 @@ def test_leitura_csv_do_hidroweb():
     assert len(dias) == 3
 
 
+def test_hidroweb_descarta_status_sem_leitura():
+    # no arquivo real da Contorno, dias sem leitura vêm como 0,0 com status 6 ou 7
+    status = ["1", "7", "6", "4", "2"] + ["1"] * 26
+    csv_vazao = ("EstacaoCodigo;NivelConsistencia;Data;"
+                 + ";".join(f"Vazao{d:02d}" for d in range(1, 32)) + ";"
+                 + ";".join(f"Vazao{d:02d}Status" for d in range(1, 32)) + "\n"
+                 "53180000;2;01/04/2019;" + ";".join(['"12,5"', '"0,0"', '"0,0"', '"0,0"', '"9,1"'] + [""] * 26)
+                 + ";" + ";".join(status) + "\n")
+    dias = {d: v for d, v, _ in ana.ler_csv_hidroweb(csv_vazao, "vazao")}
+    assert dias == {date(2019, 4, 1): 12.5, date(2019, 4, 5): 9.1}
+
+
 def test_limiares_reproduzem_o_estudo_da_uesc():
     for tr, (q, _) in limiares.TABELA_UESC_CONTORNO.items():
         assert abs(limiares.vazao_para_tr(tr) - q) / q < 0.01
