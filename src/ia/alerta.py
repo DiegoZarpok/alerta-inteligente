@@ -148,7 +148,10 @@ def gerar_alerta(previsao_id=None, solicitante="n8n", llm=None, versao=None):
     alerta_id = str(banco.alertas.insert_one(doc).inserted_id)
     _auditar(banco, "gerar_alerta", "previsoes, documentos, alertas", solicitante,
              f"alerta {alerta_id} da previsão {previsao['previsao_id']}; trechos {', '.join(r['trechos_usados'])}",
-             {"permitido": True})
+             {"permitido": True, "pergunta": f"alerta de risco {previsao['nivel_risco']} "
+                                             f"(P = {float(previsao['probabilidade']):.2f})",
+              "resposta_ia": r["texto"][:600], "texto_llm": (r["texto_gerado"] or "")[:600],
+              "validado": r["validado"], "origem_texto": r["origem_texto"]})
     return {"enviar": True, "alerta_id": alerta_id, "chat_id": config.TELEGRAM_CHAT_ALERTAS, **r,
             "nivel_risco": previsao["nivel_risco"], "latencia_total_s": total}
 
@@ -160,5 +163,7 @@ def responder_risco(solicitante, llm=None):
     previsao = previsao_do_banco(banco)
     r = escrever(previsao, banco, "risco", "v1", llm)
     _auditar(banco, "responder_risco", "previsoes, documentos", solicitante,
-             f"previsão {previsao['previsao_id']}; origem do texto: {r['origem_texto']}", {"permitido": True})
+             f"previsão {previsao['previsao_id']}; origem do texto: {r['origem_texto']}",
+             {"permitido": True, "pergunta": "/risco", "resposta_ia": r["texto"][:600],
+              "validado": r["validado"], "origem_texto": r["origem_texto"]})
     return r["texto"]

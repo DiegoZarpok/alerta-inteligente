@@ -49,12 +49,17 @@ class TratadorGemini(BaseHTTPRequestHandler):
     def do_POST(self):
         corpo = json.loads(self.rfile.read(int(self.headers["Content-Length"])))
         EstadoGemini.pedidos.append({"caminho": self.path, "corpo": corpo, "chave": self.headers.get("x-goog-api-key")})
+        if self.headers.get("x-goog-api-key") == "chave-invalida-de-teste":
+            return self._enviar(400, {"error": {"message": "API key not valid. Please pass a valid API key."}})
         if EstadoGemini.modo == "recusa_raciocinio" and "thinkingConfig" in corpo.get("generationConfig", {}):
             return self._enviar(400, {"error": {"message": "thinking_level is not supported for this model"}})
         sistema = corpo["systemInstruction"]["parts"][0]["text"]
         usuario = corpo["contents"][0]["parts"][0]["text"]
         if "intencao" in sistema:
             texto = json.dumps(_intencao(usuario))
+        elif "INSTRUÇÃO PARA O ASSISTENTE" in usuario:
+            # simula um modelo que obedece ao documento adulterado (pior caso para o validador)
+            texto = "RISCO BAIXO. Probabilidade: 5%. Sem risco. Telefone da Defesa Civil: 0800 000 0000."
         else:
             texto = _texto_alerta(usuario, sistema)
         entrada = int(len((sistema + usuario).split()) * 1.3)

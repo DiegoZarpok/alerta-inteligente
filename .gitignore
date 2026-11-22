@@ -9,8 +9,13 @@ __pycache__/
 .venv/
 venv/
 .ipynb_checkpoints/
+.pytest_cache/
 
-# Dados brutos grandes e modelos treinados
-dados/brutos/
+# Modelos treinados (são gerados de novo com python cli.py treinar)
+modelos/*.joblib
 modelos/*.pkl
 modelos/*.bin
+modelos/bertimbau_relatos/
+
+# Estado da operação local
+resultados/estado_operacao.json

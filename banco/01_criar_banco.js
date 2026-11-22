@@ -144,6 +144,7 @@
   ]);
   banco.createView("vw_auditoria_mascarada", "auditoria", [
     { $project: { _id: 0, data_hora: 1, usuario: 1, acao: 1, colecao: 1, detalhe: 1, solicitante: 1, permitido: 1,
+        pergunta: 1, intencao: 1, resposta_ia: 1, resposta_sha256: 1, validado: 1, origem_texto: 1,
         ip: { $concat: [{ $arrayElemAt: [{ $split: [{ $ifNull: ["$ip", "0.0.0.0"] }, "."] }, 0] }, ".***.***.***"] } } }
   ]);
   print("views criadas: vw_moradores_mascarado, vw_relatos_anonimizados, vw_auditoria_mascarada");

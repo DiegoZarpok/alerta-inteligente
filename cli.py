@@ -14,7 +14,8 @@ from pathlib import Path
 RAIZ = Path(__file__).resolve().parent
 ENV = RAIZ / ".env"
 SCRIPTS_BANCO = {"criar": "01_criar_banco.js", "carga": "02_carga_inicial.js", "papeis": "03_papeis_usuarios.js",
-                 "volume": "04_gerar_volume.js", "consultas-lentas": "05_consultas_lentas.js"}
+                 "volume": "04_gerar_volume.js", "consultas-lentas": "05_consultas_lentas.js",
+                 "auditoria-completa": "06_auditoria_completa.js"}
 
 
 def _ler_env():
@@ -238,6 +239,23 @@ def consulta(args):
         print("  - " + " | ".join(f"{k}: {v}" for k, v in linha.items()))
 
 
+def testar_ataques(_):
+    from src.ataques import rodar
+    print("Testando os ataques (prompt injection, injeção NoSQL e escalonamento de privilégio)...")
+    rodar()
+
+
+def testar_vazamento(_):
+    from src.vazamento import testar
+    print("Perguntando à IA com cada perfil e procurando dado protegido nas respostas...")
+    testar()
+
+
+def verificar_segredos(_):
+    from src.segredos import verificar
+    verificar()
+
+
 def auditoria(args):
     """Mostra os últimos registros de auditoria (entra como auditor, pela view mascarada)."""
     from src.db import conectar
@@ -252,6 +270,9 @@ def auditoria(args):
         resultado = "-" if permitido is None else ("permitido" if permitido else "NEGADO")
         print(f"{quando}   | {d['usuario']:<18} | {pedido:<22} | {d['acao']:<12} | {resultado:<9} | "
               f"{d['colecao'][:11]:<11} | {str(d.get('detalhe', ''))[:60]}")
+        if args.completo and (d.get("pergunta") or d.get("resposta_ia")):
+            print(f"      pergunta: {d.get('pergunta', '-')}")
+            print(f"      resposta da IA: {str(d.get('resposta_ia', '-'))[:300]}")
 
 
 def status(_):
@@ -302,8 +323,15 @@ def main():
     q.set_defaults(f=consulta)
     a = sub.add_parser("auditoria", help="mostra os últimos registros de auditoria")
     a.add_argument("-n", type=int, default=20)
+    a.add_argument("--completo", action="store_true", help="mostra também a pergunta e a resposta da IA")
     a.set_defaults(f=auditoria)
     sub.add_parser("status", help="última previsão e último alerta").set_defaults(f=status)
+    sub.add_parser("testar-ataques", help="prompt injection, injeção NoSQL e escalonamento de privilégio"
+                   ).set_defaults(f=testar_ataques)
+    sub.add_parser("testar-vazamento", help="prova, por perfil, de que a IA não vaza dado protegido"
+                   ).set_defaults(f=testar_vazamento)
+    sub.add_parser("verificar-segredos", help="procura chaves e senhas nos arquivos e no fluxo do n8n"
+                   ).set_defaults(f=verificar_segredos)
     args = p.parse_args()
     try:
         args.f(args)

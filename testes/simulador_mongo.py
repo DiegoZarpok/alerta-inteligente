@@ -20,7 +20,9 @@ VIEWS = {
     "vw_relatos_anonimizados": ("relatos", {"_id": 1, "recebido_em": 1, "setor": 1, "texto_anonimizado": 1, "classe": 1}),
     "vw_moradores_mascarado": ("moradores", {"_id": 0, "setor": 1, "ativo": 1, "inscrito_em": 1}),
     "vw_auditoria_mascarada": ("auditoria", {"_id": 0, "data_hora": 1, "usuario": 1, "acao": 1, "colecao": 1,
-                                             "detalhe": 1, "solicitante": 1, "permitido": 1, "ip": 1}),
+                                             "detalhe": 1, "solicitante": 1, "permitido": 1, "ip": 1,
+                                             "pergunta": 1, "intencao": 1, "resposta_ia": 1, "resposta_sha256": 1,
+                                             "validado": 1, "origem_texto": 1}),
 }
 ACAO = {"find": "find", "find_one": "find", "distinct": "find", "count_documents": "find", "aggregate": "find",
         "estimated_document_count": "find", "insert_one": "insert", "insert_many": "insert",
@@ -151,6 +153,15 @@ class Colecao:
 
         def chamada(*args, **kwargs):
             self._checar(acao)
+            if metodo == "aggregate":
+                # como no MongoDB: $lookup exige find na coleção de origem; $out/$merge exigem insert no destino
+                for etapa in (args[0] if args else kwargs.get("pipeline", [])):
+                    if "$lookup" in etapa:
+                        Colecao(self._b, etapa["$lookup"]["from"])._checar("find")
+                    for chave in ("$out", "$merge"):
+                        if chave in etapa:
+                            destino = etapa[chave] if isinstance(etapa[chave], str) else etapa[chave].get("into")
+                            Colecao(self._b, destino)._checar("insert")
             if kwargs.get("upsert"):
                 self._checar("insert")
             if self._nome in VIEWS:

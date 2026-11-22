@@ -50,6 +50,7 @@ def classificar_pendentes(avisar=print):
         banco.relatos.update_one({"_id": p["_id"]}, {"$set": {"classe": c, "classificado_por": modelo.nome}})
     banco.auditoria.insert_one({"data_hora": datetime.now(timezone.utc), "usuario": config.USUARIOS["classificador"],
                                 "acao": "update", "colecao": "relatos", "ip": "127.0.0.1",
-                                "detalhe": f"{len(pendentes)} relatos classificados com {modelo.nome}"})
+                                "detalhe": f"{len(pendentes)} relatos classificados com {modelo.nome}",
+                                "resposta_ia": "; ".join(f"{c}={classes.count(c)}" for c in CLASSES)})
     avisar(f"{len(pendentes)} relatos classificados com {modelo.nome}")
     return len(pendentes)

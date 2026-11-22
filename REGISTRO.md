@@ -51,5 +51,19 @@
 - IA com permissões: o operador pediu contatos dos moradores pela IA e o banco recusou (código 13); pedido de alertas permitido. Auditoria registra quem pediu, o que foi consultado, se foi permitido e quando.
 - Ajuste fino no Colab (GPU T4, 23 s de treino): BERTimbau sem ajuste F1-macro 0,247; ajustado 0,981; TF-IDF 0,868; Gemini sem treino 1,000, mas com cerca de 1,2 s por relato contra 5 ms do BERTimbau e com o texto do morador saindo para um serviço externo.
 
+- Apresentação da Entrega 2 em 17/11/2026, com a demonstração ao vivo funcionando (alerta de 96% no grupo).
+
+## Entrega 3: Versão final (código em 21/11/2026, entrega em 01/12/2026)
+- Auditoria completa: cada consulta da IA grava a pergunta anonimizada, a intenção escolhida, se o banco permitiu, o texto da resposta e um hash SHA-256 da resposta completa; alertas e /risco gravam o texto enviado e se o validador aprovou. Script banco/06_auditoria_completa.js recria só a view do auditor. `python cli.py auditoria --completo` mostra a pergunta e a resposta.
+- `python cli.py testar-ataques`: 28 ataques (prompt injection pelo terminal, pelo bot e indireta pelo RAG; injeção NoSQL com antes e depois da correção; escalonamento de privilégio com grantRolesToUser, createUser, updateUser, createRole, view, $lookup, $out e auditoria).
+- `python cli.py testar-vazamento`: 8 perfis x 5 perguntas à IA, conferindo a matriz de permissões e procurando dado protegido nas respostas.
+- `python cli.py verificar-segredos`: procura os valores reais do .env e formatos de chave em todos os arquivos do repositório e confere o fluxo do n8n exportado.
+- Validador: passou a bloquear qualquer telefone que não esteja nos documentos (199, 193, 192, 190). Correção aplicada depois do teste de prompt injection indireta.
+- Consulta da IA: a intenção moradores_por_setor não devolve mais o id cifrado, só apelido mascarado e setor.
+- Casos de teste ampliados para 17, com categoria, taxa de acerto e tempo.
+- Ajuste fino: notebooks/finetuning_comparacao.ipynb compara BERTimbau base, base com RAG, ajustado e ajustado com RAG, Gemini sem exemplos e com RAG e TF-IDF, no teste original e num teste difícil novo (dados/finetuning/relatos_dificeis.csv, 60 relatos). Prompt classificar_relato_v2.
+- Telemetria da ANA passa a baixar 8 dias (a média móvel de 7 dias precisa de pelo menos 5).
+- Testes automáticos: 35 (21 de unidade e 14 do fluxo), todos passando com o simulador.
+
 ## Próximos passos
-- Relatório da Entrega 2 e apresentação.
+- Rodar os testes da Entrega 3 no MongoDB real e no Colab; relatório final, limitações e apresentação de 10 minutos com os 4 integrantes.

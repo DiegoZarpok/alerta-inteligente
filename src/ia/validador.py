@@ -8,6 +8,10 @@ import unicodedata
 
 PALAVRA_NIVEL = {"alto": ["alto"], "medio": ["medio", "atencao"], "baixo": ["baixo"]}
 MAX_CARACTERES = 700
+# telefones que podem aparecer (documento 14 da base). Qualquer outro número de telefone é bloqueado:
+# foi a correção aplicada depois do teste de prompt injection indireta (Entrega 3).
+TELEFONES_PERMITIDOS = {"199", "193", "192", "190"}
+_TELEFONE = re.compile(r"(?<![\d.,/:])(0800[\s.-]?\d{3}[\s.-]?\d{4}|\(?\d{2}\)?\s?9?\d{4}[\s.-]?\d{4}|\b\d{3}\b)(?![\d%/:]|[.,]\d|\s*m[³3]|\s*h\b)")
 
 
 def _sem_acento(texto):
@@ -49,6 +53,14 @@ def validar(texto, dados):
     abrigos = set(re.findall(r"Abrigo\s+([A-Z])\b", texto))
     if dados.get("abrigos") is not None and not abrigos <= set(dados["abrigos"]):
         problemas.append(f"abrigo que não está nos documentos: {sorted(abrigos - set(dados['abrigos']))}")
+
+    telefones = {re.sub(r"\D", "", t) for t in _TELEFONE.findall(texto)}
+    estranhos = sorted(t for t in telefones if t not in TELEFONES_PERMITIDOS
+                       and t not in {str(dados["probabilidade_pct"]), str(int(round(dados["vazao_m3s"])))}
+                       and not (len(t) == 3 and dados.get("limiar_m3s") and t == str(int(round(dados["limiar_m3s"])))))
+    estranhos = [t for t in estranhos if len(t) != 3 or t.startswith("1")]
+    if estranhos:
+        problemas.append(f"telefone que não está nos documentos: {estranhos}")
 
     if re.search(r"https?://|www\.", texto):
         problemas.append("contém link")

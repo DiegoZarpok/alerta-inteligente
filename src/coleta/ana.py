@@ -183,7 +183,8 @@ def ler_xml_telemetria(conteudo):
     return saida
 
 
-def baixar_telemetria(codigo, dias=4):
+def baixar_telemetria(codigo, dias=8):
+    """8 dias: a média móvel de 7 dias da vazão precisa de pelo menos 5 dias completos (ajuste da Entrega 3)."""
     hoje = date.today()
     params = {"codEstacao": codigo, "dataInicio": (hoje - timedelta(days=dias)).strftime("%d/%m/%Y"),
               "dataFim": hoje.strftime("%d/%m/%Y")}

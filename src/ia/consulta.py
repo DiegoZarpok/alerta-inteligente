@@ -3,8 +3,10 @@
 1. O Gemini só escolhe uma das consultas prontas (intenção). Ele não monta consulta e não vê dados.
 2. A consulta roda com o usuário e a senha de quem perguntou. Se o papel dessa pessoa não pode ler
    a coleção, o MongoDB recusa, e a IA não tem como contornar isso.
-3. Tudo é registrado na auditoria pelo svc_ia: quem pediu, o que a IA consultou, se foi permitido e quando.
+3. Tudo é registrado na auditoria pelo svc_ia: quem pediu, a pergunta (anonimizada), o que a IA entendeu,
+   o que ela consultou, se o banco permitiu, o que ela respondeu e quando (auditoria completa, Entrega 3).
 """
+import hashlib
 import json
 import re
 import unicodedata
@@ -27,8 +29,10 @@ INTENCOES = {
     "relatos_recentes": {"colecao": "vw_relatos_anonimizados", "filtro": {}, "ordem": ("recebido_em", -1),
                          "limite": 5, "campos": {"_id": 0, "recebido_em": 1, "setor": 1, "texto_anonimizado": 1,
                                                  "classe": 1}},
+    # mesmo para quem pode ler moradores (svc_bot), a IA só devolve o apelido mascarado e o setor:
+    # o id cifrado do Telegram nunca entra numa resposta
     "moradores_por_setor": {"colecao": "moradores", "filtro": {}, "ordem": ("inscrito_em", -1), "limite": 10,
-                            "campos": {"_id": 0, "chat_cifrado": 1, "apelido_mascarado": 1, "setor": 1}},
+                            "campos": {"_id": 0, "apelido_mascarado": 1, "setor": 1, "ativo": 1}},
     "auditoria_recente": {"colecao": "vw_auditoria_mascarada", "filtro": {}, "ordem": ("data_hora", -1),
                           "limite": 10, "campos": {"data_hora": 1, "usuario": 1, "acao": 1, "colecao": 1, "ip": 1}},
 }
@@ -53,9 +57,11 @@ def intencao_por_palavras(pergunta):
     return "fora_do_escopo"
 
 
-def descobrir_intencao(pergunta, llm=None):
-    """Usa o Gemini; se ele não estiver disponível, usa palavras-chave."""
+def descobrir_intencao(pergunta, llm=None, usar_llm=True):
+    """Usa o Gemini; se ele não estiver disponível (ou usar_llm=False), usa palavras-chave."""
     try:
+        if not usar_llm:
+            raise LLMIndisponivel("palavras-chave pedidas")
         llm = llm or Gemini()
         sistema, usuario = carregar_prompt("intencao", "v1")
         r = llm.gerar(sistema, preencher(usuario, {"pergunta": pergunta[:500]}), json_saida=True, max_tokens=60)
@@ -83,9 +89,19 @@ def _texto(valor):
     return str(valor)
 
 
-def consultar(usuario, senha, pergunta, llm=None, banco_do_usuario=None):
+def texto_da_resposta(resposta, max_linhas=3):
+    """O que a IA mostrou para quem perguntou, em uma linha (vai para a auditoria)."""
+    partes = [resposta["mensagem"]]
+    for linha in resposta["linhas"][:max_linhas]:
+        partes.append(" | ".join(f"{k}: {v}" for k, v in linha.items()))
+    if len(resposta["linhas"]) > max_linhas:
+        partes.append(f"(+{len(resposta['linhas']) - max_linhas} linha(s))")
+    return anonimizar(" / ".join(partes))[:600]
+
+
+def consultar(usuario, senha, pergunta, llm=None, banco_do_usuario=None, usar_llm=True):
     """Roda a consulta pedida com as credenciais de quem pediu. Devolve a resposta e grava a auditoria."""
-    intencao, setor, metodo, uso_llm = descobrir_intencao(pergunta, llm)
+    intencao, setor, metodo, uso_llm = descobrir_intencao(pergunta, llm, usar_llm)
     resposta = {"usuario": usuario, "pergunta": pergunta, "intencao": intencao, "metodo_intencao": metodo,
                 "setor": setor, "permitido": None, "linhas": [], "mensagem": ""}
     cliente = None
@@ -117,11 +133,15 @@ def consultar(usuario, senha, pergunta, llm=None, banco_do_usuario=None):
         if cliente is not None:
             cliente.close()
         colecao = INTENCOES.get(intencao, {}).get("colecao", "nenhuma")
+        completo = json.dumps(resposta, ensure_ascii=False, sort_keys=True, default=str)
         conectar("ia").auditoria.insert_one({
             "data_hora": datetime.now(timezone.utc), "usuario": config.USUARIOS["ia"], "acao": "consulta_ia",
             "colecao": colecao, "solicitante": usuario, "pergunta": anonimizar(pergunta)[:300],
             "intencao": intencao, "metodo_intencao": metodo, "permitido": resposta["permitido"],
             "qtd_resultados": len(resposta["linhas"]), "ip": "127.0.0.1",
             "detalhe": resposta["mensagem"][:200],
+            "resposta_ia": texto_da_resposta(resposta),
+            "resposta_sha256": hashlib.sha256(completo.encode("utf-8")).hexdigest(),
+            "decisao_llm": anonimizar((uso_llm or {}).get("texto", ""))[:200],
             "tokens_llm": (uso_llm or {}).get("tokens_entrada", 0) + (uso_llm or {}).get("tokens_saida", 0),
         })

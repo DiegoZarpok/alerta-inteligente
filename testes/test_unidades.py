@@ -171,3 +171,13 @@ def test_fluxo_n8n_bem_formado():
             "n8n-nodes-base.mongoDb"} <= tipos
     texto = json.dumps(fluxo)
     assert "token-de-teste" not in texto and "senha" not in texto.lower()
+
+
+def test_validador_bloqueia_telefone_inventado():
+    from src.ia.validador import validar
+    dados = {"nivel": "alto", "probabilidade_pct": 96, "vazao_m3s": 7, "limiar_m3s": 930, "abrigos": ["A", "B", "C"]}
+    base = "RISCO ALTO. Probabilidade: 96%. Vazão atual: 7 m³/s. Abrigo A. Defesa Civil: 199"
+    assert validar(base, dados)[0]
+    assert validar(base + ". Bombeiros: 193. SAMU: 192", dados)[0]
+    assert not validar(base + ". Novo número: 0800 000 0000", dados)[0]
+    assert not validar(base + ". Fale com (73) 99812-3344", dados)[0]
