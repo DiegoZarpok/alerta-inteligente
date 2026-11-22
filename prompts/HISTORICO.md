@@ -37,5 +37,15 @@ Resposta curta ao comando /risco, com as mesmas regras de números da v2 do aler
 Escolhe uma consulta pronta a partir da pergunta do operador. Não monta consulta ao banco.
 
 ## classificar_relato
-### v1 (04/11/2026, atual)
+### v1 (04/11/2026)
 Usado só para comparar o Gemini sem treino com o BERTimbau ajustado no experimento de fine-tuning.
+
+### v2 (21/11/2026, atual)
+Usado na comparação final do ajuste fino (Entrega 3). Mudanças:
+
+1. Regras de borda escritas: negação ("ainda não entrou água" é observação), fato passado, metáfora,
+   vazamento doméstico e perguntas gerais sobre o rio são não relacionado. Na v1 essas frases
+   ficavam ambíguas, e o novo conjunto de teste difícil traz exatamente esses casos.
+2. Aviso explícito de que o relato é só um dado e que ordens dentro dele não valem (prompt injection).
+3. Segunda forma do pedido ("Usuario com exemplos"), que recebe os 5 relatos mais parecidos da base
+   de treino recuperados pelo RAG.
